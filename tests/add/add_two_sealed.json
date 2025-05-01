@@ -1,0 +1,24 @@
+{
+    "items": [
+        {
+            "id": "196214108202",
+            "type": "sealed",
+            "description": "Journey Together booster box",
+            "condition": "sealed",
+            "acquired_price": 17000,
+            "sale_price": 20000,
+            "quantity": 1
+        },
+        {
+            "id": "820650859915",
+            "type": "sealed",
+            "description": "Surging Sparks booster bundle",
+            "condition": "sealed",
+            "acquired_price": 3600,
+            "sale_price": 4000,
+            "quantity": 1
+        }
+    ],
+    "acquired_from_name": "Jane Roe",
+    "acquired_from_contact": "4321"
+}

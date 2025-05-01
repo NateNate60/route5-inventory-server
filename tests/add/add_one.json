@@ -1,0 +1,14 @@
+{
+    "items": [
+        {
+            "id": "1401019563001",
+            "type": "slab",
+            "description": "Venusaur ex 198",
+            "condition": "CGC 9.5",
+            "acquired_price": 2500,
+            "sale_price": 4000
+        }
+    ],
+    "acquired_from_name": "John Doe",
+    "acquired_from_contact": "1234"
+}

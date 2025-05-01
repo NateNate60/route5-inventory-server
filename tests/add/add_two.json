@@ -1,0 +1,23 @@
+{
+    "items": [
+        {
+            "id": "196214108202",
+            "type": "sealed",
+            "description": "Journey Together booster box",
+            "condition": "sealed",
+            "acquired_price": 17000,
+            "sale_price": 20000,
+            "quantity": 1
+        },
+        {
+            "id": "1401013590047",
+            "type": "slab",
+            "description": "Pikachu 65",
+            "condition": "CGC 10",
+            "acquired_price": 10000,
+            "sale_price": 20000
+        }
+    ],
+    "acquired_from_name": "John Doe",
+    "acquired_from_contact": "1234"
+}
