@@ -147,3 +147,16 @@ def sell_item ():
             {"$set": {"consignment_status": "sold"}}
         )
     return {"txid": txid}
+
+@app.route("/v1/inventory", methods=["GET"])
+def get_inventory_info ():
+    id = flask.request.args.get("id")
+    if id == None:
+        return flask.Response({"error": "No item ID provided"}, status=400)
+    
+    item: dict = DATABASE["inventory"].find_one({"id": id})
+
+    if item == None:
+        return flask.Response({"error": "Item ID not found"}, status=404)
+    item.pop("_id", None)
+    return item
