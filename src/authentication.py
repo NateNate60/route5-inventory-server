@@ -1,5 +1,4 @@
 import pymongo
-import pymongo.server_api
 
 import config
 
