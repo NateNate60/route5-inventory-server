@@ -32,6 +32,7 @@ def add_item ():
             if result.modified_count == 0:
                 DATABASE["inventory"].insert_one(item)
         else:
+            item["quantity"] = 1
             result = DATABASE["inventory"].replace_one({"id": item["id"]}, 
                                                        replacement=item,
                                                        upsert=True)
@@ -42,7 +43,7 @@ def add_item ():
             "quantity": item["quantity"]
         })
         price_total += item["acquired_price"]
-    txid = f"TXB{DATABASE['buys'].count_documents({})}"
+    txid = "TXB" + f"{DATABASE['sales'].count_documents({})}".zfill(6)
     DATABASE["buys"].insert_one(
         {
             "acquired_date": datetime.today().strftime('%Y-%m-%d'),
@@ -72,11 +73,13 @@ def consign_item ():
                 "error": "No UPCs allowed"
             }, status=400
         ) 
+    
+    item["quantity"] = 1
     result = DATABASE["inventory"].replace_one(filter={"id": item["id"]}, 
                                                 replacement=item,
                                                 upsert=True)
 
-    txid = f"TXC{DATABASE['consignments'].count_documents({})}"
+    txid = txid = "TXC" + f"{DATABASE['sales'].count_documents({})}".zfill(6)
     DATABASE["consignments"].insert_one(
         {
             "consign_date": datetime.today().strftime('%Y-%m-%d'),
@@ -84,9 +87,9 @@ def consign_item ():
             "consignor_contact": item["consignor_contact"],
             "sale_price": item["sale_price"],
             "item": item["id"],
-            "txid": txid
+            "txid": txid,
+            "consignment_status": "unsold"
         }
     )
 
     return {"txid": txid}
-

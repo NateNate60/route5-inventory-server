@@ -64,6 +64,7 @@ An array of objects with the following data:
 
 - `id` (`int`): The asset tag, UPC, cert number of the item to be removed.
 - `price` (`int`): The total price received for the item, in cents. If a trade was conducted, enter the amount of trade credit given.
+- `quantity` (optional, `int`): The quantity of the sealed product sold. Ignored if the product isn't a sealed product. Defaults to 1.
 
 #### Response
 
@@ -228,8 +229,15 @@ For consignment transactions:
     "consign_date": "2025-04-29",
     "consignor_name": "John Doe",
     "consignor_contact": "1234567890",
-    "consign_price": 40000,
-    "id": "A0001",
-    "quantity": 1
+    "sale_price": 40000,
+    "item": "A0001",
+    "txid": 1,
+    "consignment_status": "sold"
 }
 ```
+
+**Note**: The possible consignment statuses are:
+- `unsold`, meaning the product has not yet been sold.
+- `sold`, meaning the product has been sold but the consignor hasn't been paid yet.
+- `complete`, meaning the product has been sold and the consignor has been paid.
+- `hold`, meaning something else applies to the consignment product.
