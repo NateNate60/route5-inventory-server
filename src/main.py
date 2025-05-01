@@ -93,3 +93,57 @@ def consign_item ():
     )
 
     return {"txid": txid}
+
+@app.route("/v1/inventory/remove", methods=["POST"])
+def sell_item ():
+    items = flask.request.get_json()
+    total_price = 0
+    consignments = []
+    for item in items:
+        id = item["id"]
+        price = item["sale_price"]
+        db_item = DATABASE["inventory"].find_one({"id": id})
+        if db_item is None:
+            return flask.Response({
+                "error": "Item with given ID not found"
+            }, status=404)
+
+        if db_item["type"] != "sealed" or "quantity" not in item or item["quantity"] < 1:
+            item["quantity"] = 1
+
+        if db_item["quantity"] < item["quantity"]:
+            # not enough items in stock to sell this quantity
+            return flask.Response({
+                "error": "Item is out of stock"
+            }, status=404)
+        
+        if db_item["consignor_name"] != "" and db_item["consignor_contact"] != "":
+            # Item is a consignment item and consignor must be paid
+            consignments.append(db_item["id"])
+
+        total_price += price
+    for item in items:
+        DATABASE["inventory"].update_one({"id": item["id"]},  {
+            "$inc": {"quantity": item["quantity"] * -1},
+            "$set": {
+                "sale_date": datetime.today().strftime('%Y-%m-%d'),
+                "sale_price": price
+            }
+        })
+    txid = "TXS" + f"{DATABASE['sales'].count_documents({})}".zfill(6)
+    DATABASE["sales"].insert_one(
+        {
+            "sale_date": datetime.today().strftime('%Y-%m-%d'),
+            "sale_price_total": total_price,
+            "items": items,
+            "txid": txid
+        }
+    )
+
+    for item_id in consignments:
+        # Record the sold consignments as complete.
+        DATABASE["consignments"].update_one(
+            {"item": item_id},
+            {"$set": {"consignment_status": "sold"}}
+        )
+    return {"txid": txid}

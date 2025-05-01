@@ -63,7 +63,7 @@ Remove one or more items to the inventory.
 An array of objects with the following data:
 
 - `id` (`int`): The asset tag, UPC, cert number of the item to be removed.
-- `price` (`int`): The total price received for the item, in cents. If a trade was conducted, enter the amount of trade credit given.
+- `sale_price` (`int`): The total price received for the item, in cents. If a trade was conducted, enter the amount of trade credit given.
 - `quantity` (optional, `int`): The quantity of the sealed product sold. Ignored if the product isn't a sealed product. Defaults to 1.
 
 #### Response
