@@ -32,6 +32,7 @@ An object with the following data:
         - For graded cards, use the grader and the grade, e.g. `PSA 10` or `CGC 9.5`.
         - **Note**: For CGC Pristine 10s, use `CGC PRISTINE`. For CGC Perfect 10s, use `CGC PERFECT`. For BGS Black Labels, use `BGS BLACK`.
     - `acquired_price` (`int`): The price paid for this item, in cents, per unit.
+    - `sale_price` (`int`): The price at which this item is available for sale, in cents, per unit.
     - `quantity` (`int`): The number of units of this product acquired. This parameter is ignored if `type` isn't `sealed`.
 - `acquired_from_name` (optional, `str`): The name of the person from whom these items were acquired.
 - `acquired_from_contact` (optional, `str`): The telephone number or e-mail address of the person from whom these items were acquired.
@@ -81,7 +82,7 @@ A JSON with the transaction ID.
 - 200 OK: The transaction was logged successfully.
 - 404 Not Found: One or more items scanned is not in inventory.
 
-### GET `/v1/inventory/consign`
+### POST `/v1/inventory/consign`
 
 List a product as on consignment.
 
@@ -96,8 +97,7 @@ List a product as on consignment.
     - For raw cards, either `nm`, `lp`, `mp`, `hp`, or `d`
     - For graded cards, use the grader and the grade, e.g. `PSA 10` or `CGC 9.5`.
     - **Note**: For CGC Pristine 10s, use `CGC PRISTINE`. For CGC Perfect 10s, use `CGC PERFECT`. For BGS Black Labels, use `BGS BLACK`.
-- `consign_price` (`int`): The price of this item, in cents, per unit.
-- `quantity` (`int`): The number of units of this product acquired. This parameter is ignored if `type` isn't `sealed`.
+- `sale_price` (`int`): The price at which this item should be sold, in cents, per unit.
 - `consignor_name` (`str`): The name of the consignor of this item.
 - `consignor_contact` (`str`): The telephone number or email of the consignor of this item.
 
@@ -151,7 +151,7 @@ Data about the item in the following format:
 }
 ```
 
-**Note**: The parameters `sale_date`, `sale_txid`, and `sale_price` are only present on raw cards which have been sold. The `quantity` parameter is the number of units of that product in stock and is only ever 1 or 0 for non-sealed products. Sealed products can have higher `quantity` values.
+**Note**: The parameters `sale_date` and `sale_txid` are only present on raw cards which have been sold. The `quantity` parameter is the number of units of that product in stock and is only ever 1 or 0 for non-sealed products. Sealed products can have higher `quantity` values.
 
 **Note**: `consignor_name` and `consignor_contact` will be the empty string for things that aren't on consignment.
 
