@@ -43,7 +43,7 @@ def add_item ():
             "quantity": item["quantity"]
         })
         price_total += item["acquired_price"]
-    txid = "TXB" + f"{DATABASE['sales'].count_documents({})}".zfill(6)
+    txid = "TXB" + f"{DATABASE['buys'].count_documents({})}".zfill(6)
     DATABASE["buys"].insert_one(
         {
             "acquired_date": datetime.today().strftime('%Y-%m-%d'),
@@ -79,7 +79,7 @@ def consign_item ():
                                                 replacement=item,
                                                 upsert=True)
 
-    txid = txid = "TXC" + f"{DATABASE['sales'].count_documents({})}".zfill(6)
+    txid = txid = "TXC" + f"{DATABASE['consignments'].count_documents({})}".zfill(6)
     DATABASE["consignments"].insert_one(
         {
             "consign_date": datetime.today().strftime('%Y-%m-%d'),
@@ -154,9 +154,30 @@ def get_inventory_info ():
     if id == None:
         return flask.Response({"error": "No item ID provided"}, status=400)
     
-    item: dict = DATABASE["inventory"].find_one({"id": id})
+    item = DATABASE["inventory"].find_one({"id": id})
 
     if item == None:
         return flask.Response({"error": "Item ID not found"}, status=404)
     item.pop("_id", None)
+    return item
+
+@app.route("/v1/transactions")
+def get_transaction ():
+    id = flask.request.args.get("id")
+    if id == None:
+        return flask.Response({"error": "No item ID provided"}, status=400)
+    
+    if id[:3] == "TXB":
+        item = DATABASE["buys"].find_one({"txid": id})
+    elif id[:3] == "TXS":
+        item = DATABASE["sales"].find_one({"txid": id})
+    elif id[:3] == "TXC":
+        item = DATABASE["consignments"].find_one({"txid": id})
+    else:
+        return flask.Response({"error": "Malformed txid"}, status=400)
+    if item is None:
+        return flask.Response({"error": "txid not found"}, status=404)
+    
+    item.pop("_id")
+
     return item
