@@ -16,9 +16,13 @@ def authenticate (token: str) -> str :
     Return
         The name of the user if valid, empty string if not.
     """
-    tokens = CLIENT["route5"]["Tokens"]
+    
 
-    token_record = tokens.find_one({"token": token})
+    if "Bearer " not in token:
+        return ""
+    
+    tokens = CLIENT["route5"]["tokens"]
+    token_record = tokens.find_one({"token": token[7:]})
     if token_record is None:
         return ""
     

@@ -13,6 +13,10 @@ app = flask.Flask(__name__)
 
 @app.route("/v1/inventory/add", methods=["POST"])
 def add_item ():
+    user = authenticate(flask.request.headers.get("Authorization"))
+    if user == "":
+        return flask.Response({}, status=401)
+    
     data = flask.request.get_json()
     items = []
     price_total = 0
@@ -59,6 +63,10 @@ def add_item ():
 
 @app.route("/v1/inventory/consign", methods=["POST"])
 def consign_item ():
+    user = authenticate(flask.request.headers.get("Authorization"))
+    if user == "":
+        return flask.Response({}, status=401)
+    
     item = flask.request.get_json()
     if item["type"] not in ("card", "slab", "sealed"):
         return flask.Response(
@@ -96,6 +104,14 @@ def consign_item ():
 
 @app.route("/v1/inventory/remove", methods=["POST"])
 def sell_item ():
+    user = authenticate(flask.request.headers.get("Authorization"))
+    if user == "":
+        return flask.Response({}, status=401)
+    
+    user = authenticate(flask.request.headers.get("Authorization"))
+    if user == "":
+        return flask.Response({}, status=401)
+    
     items = flask.request.get_json()
     total_price = 0
     consignments = []
@@ -150,6 +166,10 @@ def sell_item ():
 
 @app.route("/v1/inventory", methods=["GET"])
 def get_inventory_info ():
+    user = authenticate(flask.request.headers.get("Authorization"))
+    if user == "":
+        return flask.Response({}, status=401)
+    
     id = flask.request.args.get("id")
     if id == None:
         return flask.Response({"error": "No item ID provided"}, status=400)
@@ -163,6 +183,10 @@ def get_inventory_info ():
 
 @app.route("/v1/transactions")
 def get_transaction ():
+    user = authenticate(flask.request.headers.get("Authorization"))
+    if user == "":
+        return flask.Response({}, status=401)
+    
     id = flask.request.args.get("id")
     if id == None:
         return flask.Response({"error": "No item ID provided"}, status=400)
