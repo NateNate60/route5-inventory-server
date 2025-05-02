@@ -163,6 +163,48 @@ Data about the item in the following format:
 - 200 OK: The information was fetched successfully.
 - 404 Not Found: The item scanned is not found in inventory.
 
+### GET `/v1/inventory/prices/stale`
+
+Fetch a list of things whose prices are stale (priced more than 7 days ago)
+
+#### Request parameters
+
+No parameters are required.
+
+#### Response
+
+A JSON list of in-stock inventory items whose prices were last updated more than 7 days ago.
+
+**Example:**
+```json
+[
+    {
+        "id": "A00001",
+        "type": "card",
+        "description": "Umbreon VMAX 215",
+        "condition": "nm",
+        "acquired_price": 90000,
+        "sale_price": 120000,
+        "sale_price_date": "2024-05-02T12:04:35.735+00:00",
+        "quantity": 1,
+        "consignor": "",
+        "consignor_contact": ""
+    },
+    {
+        "id": "A00002",
+        "type": "card",
+        "description": "Celebrations Charizard 4",
+        "condition": "nm",
+        "acquired_price": 9000,
+        "sale_price": 100000,
+        "sale_price_date": "2025-05-02T12:09:15.320+00:00",
+        "quantity": 1,
+        "consignor": "",
+        "consignor_contact": ""
+    }
+]
+```
+
 ### GET `/v1/transaction`
 
 Get information about a transaction.

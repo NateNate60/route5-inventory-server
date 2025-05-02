@@ -1,6 +1,6 @@
 import flask
 import pymongo
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import config
 from authentication import authenticate
@@ -213,3 +213,21 @@ def get_transaction ():
     item.pop("_id")
 
     return item
+
+@app.route("/v1/inventory/prices/stale", methods=["GET"])
+def get_stale_prices ():
+    user = authenticate(flask.request.headers.get("Authorization"))
+    if user == "":
+        return flask.Response({}, status=401)
+    
+    cursor = DATABASE["inventory"].find({
+        "sale_price_date": {"$lt" : datetime.today() - timedelta(days=7)},
+        "quantity": {"$gt": 0}
+    })
+
+    r = []
+    # Convert to a list so that it can be sent to caller
+    for item in cursor:
+        item.pop('_id')
+        r.append(item)
+    return r
