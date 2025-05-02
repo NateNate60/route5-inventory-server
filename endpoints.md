@@ -26,11 +26,13 @@ An object with the following data:
     - `type` (`str`): Either `card`, `slab`, or `sealed`.
     - `description` (`str`): A description of the item.
         - If it's a card or slab, use the card's full canonical name followed by its collector number (e.g. `Umbreon VMAX 215`).
+        - If the card is from a set that has 1st edition/unlimited variants, comes in holo and non-holo variants, or is from a set like XY Evolutions or Celebrations Classic Collection add that to the beginning, such as `Celebrations Charizard 4` or `Shadowless 1st Edition Charizard 4`.
         - If it's a sealed product, the description is ignored because it will automatically populate from the database.
     - `condition` (`str`): The item's condition.
         - For raw cards, either `nm`, `lp`, `mp`, `hp`, or `d`
         - For graded cards, use the grader and the grade, e.g. `PSA 10` or `CGC 9.5`.
         - **Note**: For CGC Pristine 10s, use `CGC PRISTINE`. For CGC Perfect 10s, use `CGC PERFECT`. For BGS Black Labels, use `BGS BLACK`.
+        - For saled products, enter either `sealed` or `damaged` if the physical cling wrap is damaged.
     - `acquired_price` (`int`): The price paid for this item, in cents, per unit.
     - `sale_price` (`int`): The price at which this item is available for sale, in cents, per unit.
     - `quantity` (`int`): The number of units of this product acquired. This parameter is ignored if `type` isn't `sealed`.
