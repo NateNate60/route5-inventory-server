@@ -231,3 +231,28 @@ def get_stale_prices ():
         item.pop('_id')
         r.append(item)
     return r
+
+@app.route("/v1/inventory/prices", methods=["PATCH"])
+def change_prices ():
+    user = authenticate(flask.request.headers.get("Authorization"))
+    if user == "":
+        return flask.Response({}, status=401)
+    
+    if "id" not in flask.request.args or "price" not in flask.request.args:
+        return flask.Response({"error": "Invalid parameters"}, status=400)
+
+    try:
+        price = flask.request.args.get('price')
+        price = int(price)
+    except ValueError:
+        return flask.Response({"error": "Invalid parameters"}, status=400)
+    
+    result = DATABASE["inventory"].update_one({"id": flask.request.args.get("id")},
+                                              {"$set": {"sale_price": price,
+                                                        "sale_price_date": datetime.today()
+                                                        }
+                                              })
+    
+    if result.modified_count == 0:
+        return flask.Response({"error": "Inventory item not found"}, status=404)
+    return {}

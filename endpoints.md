@@ -205,6 +205,22 @@ A JSON list of in-stock inventory items whose prices were last updated more than
 ]
 ```
 
+### PATCH `/v1/inventory/prices`
+
+Update the price of an item.
+
+Prices of items that are out of stock can still be changed by calling this endpoint.
+
+#### Request parameters
+
+- `id` (`str`): The serial number, UPC, or asset tag of the item whose price to change.
+- `price` (`int`): The new price of the item, in cents.
+
+#### Status codes
+
+- 200 OK: The price was successfully updated.
+- 404 Not Found: The item with the given ID was not found in inventory.
+
 ### GET `/v1/transaction`
 
 Get information about a transaction.
