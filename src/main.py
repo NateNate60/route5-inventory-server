@@ -31,11 +31,19 @@ def add_item ():
             )
         if item["type"] == "sealed":
             # Increment the number of this sealed product in inventory
-            result = DATABASE["inventory"].update_one({"id": item["id"]}, {"$inc": {"quantity": item["quantity"]}})
+            result = DATABASE["inventory"].update_one({"id": item["id"]}, {
+                "$inc": {"quantity": item["quantity"]},
+                "$set": {
+                    "sale_price": item["sale_price"],
+                    "sale_price_date": datetime.today()
+                }
+            })
             # If nothing was modified, it's not in the database!
             if result.modified_count == 0:
+                item["sale_price_date"] = datetime.today()
                 DATABASE["inventory"].insert_one(item)
         else:
+            item["sale_price_date"] = datetime.today()
             item["quantity"] = 1
             result = DATABASE["inventory"].replace_one({"id": item["id"]}, 
                                                        replacement=item,
