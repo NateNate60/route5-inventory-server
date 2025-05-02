@@ -18,7 +18,7 @@ def authenticate (token: str) -> str :
     """
     
 
-    if "Bearer " not in token:
+    if token is None or "Bearer " not in token:
         return ""
     
     tokens = CLIENT["route5"]["tokens"]
