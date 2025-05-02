@@ -60,6 +60,8 @@ A JSON with the transaction ID.
 
 Remove one or more items to the inventory.
 
+If an item is sold for a price other than its sale price, the records will be updated to reflect the new sale price. The exception to this is sealed product. Prices on sealed product will not be updated even if they are recorded as having been sold for a lower price.
+
 #### Request body
 
 An array of objects with the following data:

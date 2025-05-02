@@ -167,12 +167,17 @@ def sell_item ():
 
         total_price += price
     for item in items:
+
+        # If the item is sealed product don't set the price of the 
+        # remaining units to be the price this unit was sold at.
+        set_data = {"sale_date": datetime.today()}
+        if len(item['id']) != 12:
+            # It's not sealed product if the ID isn't a 12-digit UPC
+            set_data["sale_price"] = price
+
         DATABASE["inventory"].update_one({"id": item["id"]},  {
             "$inc": {"quantity": item["quantity"] * -1},
-            "$set": {
-                "sale_date": datetime.today(),
-                "sale_price": price
-            }
+            "$set": set_data
         })
     txid = "TXS" + f"{DATABASE['sales'].count_documents({})}".zfill(6)
     DATABASE["sales"].insert_one(
