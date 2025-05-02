@@ -50,7 +50,7 @@ def add_item ():
     txid = "TXB" + f"{DATABASE['buys'].count_documents({})}".zfill(6)
     DATABASE["buys"].insert_one(
         {
-            "acquired_date": datetime.today().strftime('%Y-%m-%d'),
+            "acquired_date": datetime.today(),
             "acquired_from_name": data["acquired_from_name"],
             "acquired_from_contact": data["acquired_from_contact"],
             "acquired_price_total": price_total,
@@ -90,7 +90,7 @@ def consign_item ():
     txid = txid = "TXC" + f"{DATABASE['consignments'].count_documents({})}".zfill(6)
     DATABASE["consignments"].insert_one(
         {
-            "consign_date": datetime.today().strftime('%Y-%m-%d'),
+            "consign_date": datetime.today(),
             "consignor_name": item["consignor_name"],
             "consignor_contact": item["consignor_contact"],
             "sale_price": item["sale_price"],
@@ -142,14 +142,14 @@ def sell_item ():
         DATABASE["inventory"].update_one({"id": item["id"]},  {
             "$inc": {"quantity": item["quantity"] * -1},
             "$set": {
-                "sale_date": datetime.today().strftime('%Y-%m-%d'),
+                "sale_date": datetime.today(),
                 "sale_price": price
             }
         })
     txid = "TXS" + f"{DATABASE['sales'].count_documents({})}".zfill(6)
     DATABASE["sales"].insert_one(
         {
-            "sale_date": datetime.today().strftime('%Y-%m-%d'),
+            "sale_date": datetime.today(),
             "sale_price_total": total_price,
             "items": items,
             "txid": txid
