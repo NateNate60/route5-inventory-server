@@ -231,4 +231,5 @@ def get_inventory_info ():
     if item == None:
         return flask.Response({"error": "Item ID not found"}, status=404)
     item.pop("_id", None)
+    item['sale_price_date'] = item['sale_price_date'].isoformat() + 'Z'
     return item
