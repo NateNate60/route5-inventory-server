@@ -1,5 +1,5 @@
 import flask
-from datetime import datetime, timedelta
+import datetime
 
 from authentication import authenticate
 from database import DATABASE
@@ -30,15 +30,15 @@ def add_item ():
                 "$inc": {"quantity": item["quantity"]},
                 "$set": {
                     "sale_price": item["sale_price"],
-                    "sale_price_date": datetime.today()
+                    "sale_price_date": datetime.datetime.now(datetime.timezone.utc)
                 }
             })
             # If nothing was modified, it's not in the database!
             if result.modified_count == 0:
-                item["sale_price_date"] = datetime.today()
+                item["sale_price_date"] = datetime.datetime.now(datetime.timezone.utc)
                 DATABASE["inventory"].insert_one(item)
         else:
-            item["sale_price_date"] = datetime.today()
+            item["sale_price_date"] = datetime.datetime.now(datetime.timezone.utc)
             item["quantity"] = 1
             result = DATABASE["inventory"].replace_one({"id": item["id"]}, 
                                                        replacement=item,
@@ -53,7 +53,7 @@ def add_item ():
     txid = "TXB" + f"{DATABASE['buys'].count_documents({})}".zfill(6)
     DATABASE["buys"].insert_one(
         {
-            "acquired_date": datetime.today(),
+            "acquired_date": datetime.datetime.now(datetime.timezone.utc),
             "acquired_from_name": data["acquired_from_name"],
             "acquired_from_contact": data["acquired_from_contact"],
             "acquired_price_total": price_total,
@@ -81,7 +81,7 @@ def change_prices ():
     
     result = DATABASE["inventory"].update_one({"id": flask.request.args.get("id")},
                                               {"$set": {"sale_price": price,
-                                                        "sale_price_date": datetime.today()
+                                                        "sale_price_date": datetime.datetime.now(datetime.timezone.utc)
                                                         }
                                               })
     
@@ -118,7 +118,7 @@ def consign_item ():
     txid = txid = "TXC" + f"{DATABASE['consignments'].count_documents({})}".zfill(6)
     DATABASE["consignments"].insert_one(
         {
-            "consign_date": datetime.today(),
+            "consign_date": datetime.datetime.now(datetime.timezone.utc),
             "consignor_name": item["consignor_name"],
             "consignor_contact": item["consignor_contact"],
             "sale_price": item["sale_price"],
@@ -170,7 +170,7 @@ def sell_item ():
 
         # If the item is sealed product don't set the price of the 
         # remaining units to be the price this unit was sold at.
-        set_data = {"sale_date": datetime.today()}
+        set_data = {"sale_date": datetime.datetime.now(datetime.timezone.utc)}
         if len(item['id']) != 12:
             # It's not sealed product if the ID isn't a 12-digit UPC
             set_data["sale_price"] = price
@@ -182,7 +182,7 @@ def sell_item ():
     txid = "TXS" + f"{DATABASE['sales'].count_documents({})}".zfill(6)
     DATABASE["sales"].insert_one(
         {
-            "sale_date": datetime.today(),
+            "sale_date": datetime.datetime.now(datetime.timezone.utc),
             "sale_price_total": total_price,
             "items": items,
             "txid": txid
@@ -204,7 +204,7 @@ def get_stale_prices ():
         return flask.Response({}, status=401)
     
     cursor = DATABASE["inventory"].find({
-        "sale_price_date": {"$lt" : datetime.today() - timedelta(days=7)},
+        "sale_price_date": {"$lt": datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=7)},
         "quantity": {"$gt": 0}
     })
 
@@ -212,6 +212,7 @@ def get_stale_prices ():
     # Convert to a list so that it can be sent to caller
     for item in cursor:
         item.pop('_id')
+        item['sale_price_date'] = item['sale_price_date'].isoformat() + "Z"
         r.append(item)
     return r
 
