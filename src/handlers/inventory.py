@@ -165,7 +165,7 @@ def sell_item ():
             # Item is a consignment item and consignor must be paid
             consignments.append(db_item["id"])
 
-        total_price += price
+        total_price += price * item["quantity"]
     for item in items:
 
         # If the item is sealed product don't set the price of the 
@@ -220,16 +220,16 @@ def get_stale_prices ():
 def get_inventory_info ():
     user = authenticate(flask.request.headers.get("Authorization"))
     if user == "":
-        return flask.Response({}, status=401)
+        return flask.Response(status=401)
     
     id = flask.request.args.get("id")
     if id == None:
-        return flask.Response({"error": "No item ID provided"}, status=400)
+        return flask.Response('{"error": "No item ID provided"}', status=400)
     
     item = DATABASE["inventory"].find_one({"id": id})
 
     if item == None:
-        return flask.Response({"error": "Item ID not found"}, status=404)
+        return flask.Response('{"error": "Item ID not found"}', status=404)
     item.pop("_id", None)
     item['sale_price_date'] = item['sale_price_date'].isoformat() + 'Z'
     return item
