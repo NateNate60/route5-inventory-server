@@ -1,8 +1,7 @@
 import flask
-import pymongo
+import flask_cors
 from datetime import datetime, timedelta
 
-import config
 from authentication import authenticate
 from database import DATABASE
 
@@ -13,3 +12,5 @@ app = flask.Flask(__name__)
 
 app.register_blueprint(inventory)
 app.register_blueprint(transactions)
+
+flask_cors.CORS(app)
