@@ -216,6 +216,24 @@ def get_stale_prices ():
         r.append(item)
     return r
 
+@inventory.route("/v1/inventory/all", methods=["GET"])
+def get_all_inventory ():
+    user = authenticate(flask.request.headers.get("Authorization"))
+    if user == "":
+        return flask.Response(status=401)
+    
+    r = []
+
+    # Find everything
+    cursor = DATABASE["inventory"].find({"quantity": {"$gt": 0}})
+
+    for item in cursor:
+        item.pop('_id')
+        item['sale_price_date'] = item['sale_price_date'].isoformat() + "Z"
+        r.append(item)
+
+    return r
+
 @inventory.route("/v1/inventory", methods=["GET"])
 def get_inventory_info ():
     user = authenticate(flask.request.headers.get("Authorization"))

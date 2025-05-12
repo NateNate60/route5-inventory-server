@@ -144,13 +144,13 @@ Data about the item in the following format:
     "description": "UMBREON V 189",
     "condition": "PSA 10",
     "acquired_price": 40000,
-    "acquired_date": "2025-04-29",
+    "acquired_date": "2025-05-02T19:09:15.320Z",
     "acquired_txid": "TXB0001",
     "quantity": 0,
-    "sale_date": "2025-04-30",
+    "sale_date": "2025-05-10T18:23:46.622000Z",
     "sale_txid": "TXS0002",
     "sale_price": 45000,
-    "sale_price_changed_date": "2025-04-29",
+    "sale_price_changed_date": "2025-05-02T19:09:15.320Z",
     "consignor_name": "",
     "consignor_contact": ""
 }
@@ -187,7 +187,7 @@ A JSON list of in-stock inventory items whose prices were last updated more than
         "condition": "nm",
         "acquired_price": 90000,
         "sale_price": 120000,
-        "sale_price_date": "2024-05-02T12:04:35.735+00:00",
+        "sale_price_date": "2024-05-02T19:04:35.735Z",
         "quantity": 1,
         "consignor": "",
         "consignor_contact": ""
@@ -199,7 +199,7 @@ A JSON list of in-stock inventory items whose prices were last updated more than
         "condition": "nm",
         "acquired_price": 9000,
         "sale_price": 100000,
-        "sale_price_date": "2025-05-02T12:09:15.320+00:00",
+        "sale_price_date": "2025-05-02T19:09:15.320Z",
         "quantity": 1,
         "consignor": "",
         "consignor_contact": ""
@@ -223,6 +223,37 @@ Prices of items that are out of stock can still be changed by calling this endpo
 - 200 OK: The price was successfully updated.
 - 404 Not Found: The item with the given ID was not found in inventory.
 
+### GET `/v1/inventory/all`
+
+Get a list of everything in the inventory where there is at least 1 unit in stock.
+
+#### Requires parameters
+
+None
+
+#### Response
+
+A JSON list of things in the inventory, in the following format:
+
+```json
+[
+    {
+        "acquired_price": 300,
+        "condition": "NM",
+        "consignor_contact": "",
+        "consignor_name": "",
+        "description": "Probopass 182",
+        "id": "A0030",
+        "quantity": 1,
+        "sale_date": "",
+        "sale_price": 170,
+        "sale_price_date": "2025-05-10T16:23:46.622000Z",
+        "type": "card"
+    }
+]
+```
+
+
 ### GET `/v1/transaction`
 
 Get information about a transaction.
@@ -239,7 +270,7 @@ For sale transactions (removing things from inventory):
 
 ```json
 {
-    "sale_date": "2025-04-29",
+    "sale_date": "2025-05-02T19:09:15.320Z",
     "sale_total": 50000,
     "sale_items": [
         {
@@ -265,7 +296,7 @@ For purchase transactions (adding things to inventory):
 
 ```json
 {
-    "acquired_date": "2025-04-29",
+    "acquired_date": "2025-04-02T04:09:15.320Z",
     "acquired_from_name": "John Doe",
     "acquired_from_contact": "1234567890",
     "acquired_price_total": 40000,
@@ -288,7 +319,7 @@ For consignment transactions:
 
 ```json
 {
-    "consign_date": "2025-04-29",
+    "consign_date": "2025-05-02T01:09:15.320Z",
     "consignor_name": "John Doe",
     "consignor_contact": "1234567890",
     "sale_price": 40000,
