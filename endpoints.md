@@ -334,3 +334,26 @@ For consignment transactions:
 - `sold`, meaning the product has been sold but the consignor hasn't been paid yet.
 - `complete`, meaning the product has been sold and the consignor has been paid.
 - `hold`, meaning something else applies to the consignment product.
+
+### GET `/v1/psa`
+
+Look up a PSA slab's cert number using the PSA cert lookup.
+
+#### Request parameters
+
+- `id` (`string`): The slab's cert number
+
+#### Response
+
+JSON data in the following form
+
+```json
+{
+    "cert": "113426540",
+    "grade": "10",
+    "grader": "PSA",
+    "name": "SWORD & SHIELD EVOLVING SKIES 218 FULL ART/RAYQUAZA VMAX SECRET"
+}
+```
+
+**Warning**: PSA API rate limits only allow 100 queries per day without payment.
