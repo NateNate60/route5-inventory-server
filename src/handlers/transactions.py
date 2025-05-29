@@ -53,4 +53,26 @@ def get_buy_transactions ():
         thing.pop("_id")
         data.append(thing)
     return data
+
+@transactions.route("/v1/transaction/sales")
+def get_buy_transactions ():
+    user = authenticate(flask.request.headers.get("Authorization"))
+    if user == "":
+        return flask.Response({}, status=401)
     
+    start_date = flask.request.args.get("start_date")
+    end_date = flask.request.args.get("end_date")
+
+    cursor = DATABASE["sales"].find({"$and": [
+        {
+            "acquired_date": {"$gte": datetime(1980, 1, 1, 0, 0, 0) if start_date is None else datetime.fromisocalendar(start_date)}
+        },
+        {
+            "acquired_date": {"$lte": datetime(9999, 1, 1, 0, 0, 0) if end_date is None else datetime.fromisocalendar(end_date)}
+        }
+    ]})
+    data = []
+    for thing in cursor:
+        thing.pop("_id")
+        data.append(thing)
+    return data
