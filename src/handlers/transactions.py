@@ -2,10 +2,11 @@ import flask
 
 from authentication import authenticate
 from database import DATABASE
+from datetime import datetime
 
 transactions = flask.Blueprint('transactions', __name__)
 
-@transactions.route("/v1/transactions")
+@transactions.route("/v1/transaction")
 def get_transaction ():
     user = authenticate(flask.request.headers.get("Authorization"))
     if user == "":
@@ -29,3 +30,27 @@ def get_transaction ():
     item.pop("_id")
 
     return item
+
+@transactions.route("/v1/transaction/buys")
+def get_buy_transactions ():
+    user = authenticate(flask.request.headers.get("Authorization"))
+    if user == "":
+        return flask.Response({}, status=401)
+    
+    start_date = flask.request.args.get("start_date")
+    end_date = flask.request.args.get("end_date")
+
+    cursor = DATABASE["buys"].find({"$and": [
+        {
+            "acquired_date": {"$gte": datetime(1980, 1, 1, 0, 0, 0) if start_date is None else datetime.fromisocalendar(start_date)}
+        },
+        {
+            "acquired_date": {"$lte": datetime(9999, 1, 1, 0, 0, 0) if end_date is None else datetime.fromisocalendar(end_date)}
+        }
+    ]})
+    data = []
+    for thing in cursor:
+        thing.pop("_id")
+        data.append(thing)
+    return data
+    
