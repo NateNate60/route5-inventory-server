@@ -16,6 +16,7 @@ def add_item ():
     items = []
     price_total = 0
     for item in data["items"]:
+        item["acquired_date"] = datetime.datetime.now(datetime.timezone.utc)
         item["consignor_name"] = ""
         item["consignor_contact"] = ""
         if item["type"] not in ("card", "slab", "sealed"):
@@ -229,6 +230,7 @@ def get_all_inventory ():
 
     for item in cursor:
         item.pop('_id')
+        item['acquired_date'] = item['acquired_date'].isoformat() + "Z"
         item['sale_price_date'] = item['sale_price_date'].isoformat() + "Z"
         r.append(item)
 
