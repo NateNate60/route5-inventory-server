@@ -36,6 +36,7 @@ An object with the following data:
     - `acquired_price` (`int`): The price paid for this item, in cents, per unit.
     - `sale_price` (`int`): The price at which this item is available for sale, in cents, per unit.
     - `quantity` (`int`): The number of units of this product acquired. This parameter is ignored if `type` isn't `sealed`.
+- `credit_given` (optional, `int`): The amount of store credit given for this purchase
 - `acquired_from_name` (optional, `str`): The name of the person from whom these items were acquired.
 - `acquired_from_contact` (optional, `str`): The telephone number or e-mail address of the person from whom these items were acquired.
 
@@ -64,11 +65,28 @@ If an item is sold for a price other than its sale price, the records will be up
 
 #### Request body
 
-An array of objects with the following data:
+An object with the following data:
 
-- `id` (`int`): The asset tag, UPC, cert number of the item to be removed.
-- `sale_price` (`int`): The total price received for the item, in cents. If a trade was conducted, enter the amount of trade credit given.
-- `quantity` (optional, `int`): The quantity of the sealed product sold. Ignored if the product isn't a sealed product. Defaults to 1.
+```json
+{
+    "credit_applied": 1234,
+    "payment_method": "cash"
+    "items": [
+        {
+            "id": "A0001",
+            "sale_price": 2234,
+            "quantity": 1
+        }
+    ]
+}
+```
+
+- `credit_applied` (`int`) indicates that amount of store credit applied to the purchase (in cents).
+- `payment_method` (`str`) is something like `venmo`, `zelle`, `cashapp`, `paypal`, `card`, or `cash` and indicates the method used by the customer to pay the remainder of the balance. Use `cash` if store credit was used to cover the entire purchase.
+- `items` is an array of objects with the following properties:
+    - `id` (`int`): The asset tag, UPC, cert number of the item to be removed.
+    - `sale_price` (`int`): The total price received for the item, in cents. If a trade was conducted, enter the amount of trade credit given.
+    - `quantity` (optional, `int`): The quantity of the sealed product sold. Ignored if the product isn't a sealed product. Defaults to 1.
 
 #### Response
 
@@ -271,26 +289,36 @@ For sale transactions (removing things from inventory):
 ```json
 {
     "sale_date": "2025-05-02T19:09:15.320Z",
-    "sale_total": 50000,
-    "sale_items": [
+    "sale_price_total": 50000,
+    "payment_method": "cash",
+    "credit_applied": 1000,
+    "items": [
         {
             "id": "A0001",
             "sale_price": 1000,
-            "quantity": 1
+            "quantity": 1,
+            "acquired_price": 900,
+            "description": "Card Name 123"
         },
         {
             "id": "104691943",
             "sale_price": 49000,
-            "quantity": 1
+            "quantity": 1,
+            "acquired_price": 40000,
+            "description": "Card Name 123 PSA 10"
         },
         {
             "id": "196214108202",
             "sale_price": 20000,
-            "quantity": 2
+            "quantity": 2,
+            "acquired_price": 15000,
+            "description": "Sealed Product Name"
         }
     ]
 }
 ```
+
+Note that `credit_applied` indicates the amount of store credit applied towards the transaction. The `sale_total` indicates the sum of all payments received, *inclusive of store credit*. So in the above example, this would indicate $490.00 in cash was paid, and $10.00 in store credit was applied, for a total sale of $500.00.
 
 For purchase transactions (adding things to inventory):
 
@@ -300,6 +328,8 @@ For purchase transactions (adding things to inventory):
     "acquired_from_name": "John Doe",
     "acquired_from_contact": "1234567890",
     "acquired_price_total": 40000,
+    "credit_given": 30000
+    "payment_method": "cash"
     "items": [
         {
             "id": "A0001",
@@ -314,6 +344,8 @@ For purchase transactions (adding things to inventory):
     ]
 }
 ```
+
+Note that `credit_applied` indicates the amount of store credit applied towards the transaction. The `acquired_price_total` indicates the sum of all payments received, *inclusive of store credit*. So in the above example, this would indicate $100.00 in cash was paid, and $300.00 in store credit was given, for a total payment of $400.00.
 
 For consignment transactions:
 
