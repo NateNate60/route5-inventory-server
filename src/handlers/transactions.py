@@ -42,20 +42,25 @@ def get_buy_transactions ():
 
     cursor = DATABASE["buys"].find({"$and": [
         {
-            "acquired_date": {"$gte": datetime(1980, 1, 1, 0, 0, 0) if start_date is None else datetime.fromisocalendar(start_date)}
+            "acquired_date": {"$gte": datetime(1980, 1, 1, 0, 0, 0) if start_date is None else datetime.fromisoformat(start_date.replace('Z', '+00:00'))}
         },
         {
-            "acquired_date": {"$lte": datetime(9999, 1, 1, 0, 0, 0) if end_date is None else datetime.fromisocalendar(end_date)}
+            "acquired_date": {"$lte": datetime(9999, 1, 1, 0, 0, 0) if end_date is None else datetime.fromisoformat(end_date.replace('Z', '+00:00'))}
         }
     ]})
     data = []
     for thing in cursor:
         thing.pop("_id")
+        if "credit_given" not in thing:
+            thing["credit_given"] = 0
+        if "payment_method" not in thing:
+            thing["payment_method"] = "Unknown"
+        thing["acquired_date"] = datetime.isoformat(thing["acquired_date"]) + 'Z'
         data.append(thing)
     return data
 
 @transactions.route("/v1/transaction/sales")
-def get_buy_transactions ():
+def get_sale_transactions ():
     user = authenticate(flask.request.headers.get("Authorization"))
     if user == "":
         return flask.Response({}, status=401)
@@ -65,14 +70,19 @@ def get_buy_transactions ():
 
     cursor = DATABASE["sales"].find({"$and": [
         {
-            "acquired_date": {"$gte": datetime(1980, 1, 1, 0, 0, 0) if start_date is None else datetime.fromisocalendar(start_date)}
+            "sale_date": {"$gte": datetime(1980, 1, 1, 0, 0, 0) if start_date is None else datetime.fromisoformat(start_date.replace('Z', '+00:00'))}
         },
         {
-            "acquired_date": {"$lte": datetime(9999, 1, 1, 0, 0, 0) if end_date is None else datetime.fromisocalendar(end_date)}
+            "sale_date": {"$lte": datetime(9999, 1, 1, 0, 0, 0) if end_date is None else datetime.fromisoformat(end_date.replace('Z', '+00:00'))}
         }
     ]})
     data = []
     for thing in cursor:
         thing.pop("_id")
+        if "credit_applied" not in thing:
+            thing["credit_applied"] = 0
+        if "payment_method" not in thing:
+            thing["payment_method"] = "Unknown"
+        thing["sale_date"] = datetime.isoformat(thing["sale_date"]) + 'Z'
         data.append(thing)
     return data

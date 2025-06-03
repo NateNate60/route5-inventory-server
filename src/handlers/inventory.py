@@ -47,17 +47,21 @@ def add_item ():
             item["quantity"] = 1
         items.append({
             "id": item["id"],
+            "description": item["description"],
             "acquired_price": item["acquired_price"],
+            "sale_price": item["sale_price"],
             "quantity": item["quantity"]
         })
-        price_total += item["acquired_price"]
+        price_total += item["acquired_price"] * item["quantity"]
     txid = "TXB" + f"{DATABASE['buys'].count_documents({})}".zfill(6)
     DATABASE["buys"].insert_one(
         {
             "acquired_date": datetime.datetime.now(datetime.timezone.utc),
             "acquired_from_name": data["acquired_from_name"],
             "acquired_from_contact": data["acquired_from_contact"],
+            "credit_given": data["credit_given"] if "credit_given" in data else 0,
             "acquired_price_total": price_total,
+            "payment_method": data["payment_method"] if "payment_method" in data else "unknown",
             "items": items,
             "txid": txid
         }
@@ -141,9 +145,14 @@ def sell_item ():
     if user == "":
         return flask.Response({}, status=401)
     
-    items = flask.request.get_json()
+    json = flask.request.get_json()
+    payment_method = json["payment_method"]
+    credit_applied = int(json["credit_applied"]) if "credit_applied" in json else 0
+    items = json["items"]
     total_price = 0
     consignments = []
+
+    processed_items = []
     for item in items:
         id = item["id"]
         price = item["sale_price"]
@@ -167,7 +176,10 @@ def sell_item ():
             consignments.append(db_item["id"])
 
         total_price += price * item["quantity"]
-    for item in items:
+        item["acquired_price"] = db_item["acquired_price"]
+        item["description"] = db_item["description"]
+        processed_items.append(item)
+    for item in processed_items:
 
         # If the item is sealed product don't set the price of the 
         # remaining units to be the price this unit was sold at.
@@ -185,7 +197,9 @@ def sell_item ():
         {
             "sale_date": datetime.datetime.now(datetime.timezone.utc),
             "sale_price_total": total_price,
-            "items": items,
+            "credit_applied": credit_applied,
+            "payment_method": payment_method,
+            "items": processed_items,
             "txid": txid
         }
     )
