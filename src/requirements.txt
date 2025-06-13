@@ -3,3 +3,5 @@ pymongo
 flask-cors
 requests
 pip-system-certs
+passlib
+flask-jwt-extended
