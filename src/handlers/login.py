@@ -48,6 +48,6 @@ def check_access_token ():
     return flask.jsonify(
         {
             "username": identity,
-            "expiration": token[1]["exp"]
+            "expiration": datetime.datetime.fromtimestamp(token[1]["exp"]).isoformat()
         }
     )
