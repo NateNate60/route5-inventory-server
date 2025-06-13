@@ -1,16 +1,14 @@
 import flask
 import datetime
+from flask_jwt_extended import jwt_required
 
-from authentication import authenticate
 from database import DATABASE
 
 inventory = flask.Blueprint('inventory', __name__)
 
 @inventory.route("/v1/inventory/add", methods=["POST"])
+@jwt_required()
 def add_item ():
-    user = authenticate(flask.request.headers.get("Authorization"))
-    if user == "":
-        return flask.Response({}, status=401)
     
     data = flask.request.get_json()
     items = []
@@ -70,11 +68,8 @@ def add_item ():
     return {"txid": txid}
 
 @inventory.route("/v1/inventory/prices", methods=["PATCH"])
+@jwt_required()
 def change_prices ():
-    user = authenticate(flask.request.headers.get("Authorization"))
-    if user == "":
-        return flask.Response({}, status=401)
-    
     if "id" not in flask.request.args or "price" not in flask.request.args:
         return flask.Response({"error": "Invalid parameters"}, status=400)
 
@@ -95,11 +90,8 @@ def change_prices ():
     return {}
 
 @inventory.route("/v1/inventory/consign", methods=["POST"])
+@jwt_required()
 def consign_item ():
-    user = authenticate(flask.request.headers.get("Authorization"))
-    if user == "":
-        return flask.Response({}, status=401)
-    
     item = flask.request.get_json()
     if item["type"] not in ("card", "slab", "sealed"):
         return flask.Response(
@@ -136,15 +128,8 @@ def consign_item ():
     return {"txid": txid}
 
 @inventory.route("/v1/inventory/remove", methods=["POST"])
+@jwt_required()
 def sell_item ():
-    user = authenticate(flask.request.headers.get("Authorization"))
-    if user == "":
-        return flask.Response({}, status=401)
-    
-    user = authenticate(flask.request.headers.get("Authorization"))
-    if user == "":
-        return flask.Response({}, status=401)
-    
     json = flask.request.get_json()
     payment_method = json["payment_method"]
     credit_applied = int(json["credit_applied"]) if "credit_applied" in json else 0
@@ -213,11 +198,8 @@ def sell_item ():
     return {"txid": txid}
 
 @inventory.route("/v1/inventory/prices/stale", methods=["GET"])
+@jwt_required()
 def get_stale_prices ():
-    user = authenticate(flask.request.headers.get("Authorization"))
-    if user == "":
-        return flask.Response({}, status=401)
-    
     cursor = DATABASE["inventory"].find({
         "sale_price_date": {"$lt": datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=7)},
         "quantity": {"$gt": 0}
@@ -232,11 +214,8 @@ def get_stale_prices ():
     return r
 
 @inventory.route("/v1/inventory/all", methods=["GET"])
+@jwt_required()
 def get_all_inventory ():
-    user = authenticate(flask.request.headers.get("Authorization"))
-    if user == "":
-        return flask.Response(status=401)
-    
     r = []
 
     # Find everything
@@ -251,11 +230,8 @@ def get_all_inventory ():
     return r
 
 @inventory.route("/v1/inventory", methods=["GET"])
+@jwt_required()
 def get_inventory_info ():
-    user = authenticate(flask.request.headers.get("Authorization"))
-    if user == "":
-        return flask.Response(status=401)
-    
     id = flask.request.args.get("id")
     if id == None:
         return flask.Response('{"error": "No item ID provided"}', status=400)

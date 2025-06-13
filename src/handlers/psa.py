@@ -1,4 +1,4 @@
-from authentication import authenticate
+from flask_jwt_extended import jwt_required
 import config
 import requests
 import flask 
@@ -6,14 +6,11 @@ import flask
 psa = flask.Blueprint('psa', __name__)
 
 @psa.route("/v1/psa")
+@jwt_required()
 def psa_api_lookup () :
     """
     Look up a PSA cert number and return info about the slab
     """
-    user = authenticate(flask.request.headers.get("Authorization"))
-    if user == "":
-        return flask.Response({}, status=401)
-    
     cert = flask.request.args.get("id")
 
     if cert is None:
