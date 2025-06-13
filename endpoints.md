@@ -5,13 +5,56 @@ This page lists the API endpoints for the Route 5 inventory management server an
 
 ## Authentication
 
-Authentication is by bearer tokens. Tokens are issued ahead of time. There is currently not a way to issue them through the API themselves. But once you have a token, include it in an `Authorization` header in the standard way, i.e. `Bearer [your bearer token]`.
+Authentication is by bearer tokens. Once you have a token, include it in an `Authorization` header in the standard way, i.e. `Bearer [your bearer token]`. All endpoints take access tokens except for `/v1/login` (which takes no tokens at all) and `/v1/login/tokens/access` (which takes a refresh token). Access tokens are good for 20 minutes. Refresh tokens are good for 30 days.
 
 ## Re-use of asset tags
 
 If an asset tag is added to inventory that already represents something else, the existing data is overwritten.
 
 ## Endpoints
+
+### POST `/v1/login`
+
+Obtain a refresh token and an access token. The refresh token is good for 30 days. The access token is good for 20 minutes.
+
+#### Request body
+
+A JSON object with the following data:
+
+- `username` (`str`): The username of the user to log in.
+- `password` (`str`): The user's password.
+
+#### Response
+
+An object with the following data:
+
+- `refresh_token` (`str`): A refresh token
+- `access_token` (`str`): An access token
+
+### POST `/v1/login/tokens/access`
+
+Obtain an access token (using a refresh token). The access token is good for 20 minutes.
+
+#### Request parameters
+
+None required
+
+#### Response
+
+An object with the following data:
+
+- `access_token` (`str`): An access token
+
+### GET `/v1/login/tokens/access/validity`
+
+Determine whether an access token is still good and return its username and expiration date.
+
+#### Response
+
+If the token is still good, this endpoint returns a JSON object with the following data:
+
+- `username` (`str`): The username associated with the token.
+- `expiration` (`str`): When the token expires, in ISO 8601 format.
 
 ### POST `/v1/inventory/add`
 
