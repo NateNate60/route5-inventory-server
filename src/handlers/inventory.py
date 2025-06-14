@@ -209,7 +209,7 @@ def get_stale_prices ():
     # Convert to a list so that it can be sent to caller
     for item in cursor:
         item.pop('_id')
-        item['sale_price_date'] = item['sale_price_date'].isoformat() + "Z"
+        item['sale_price_date'] = item['sale_price_date'].isoformat() + "Z" if item['sale_price_date'] != "" else ""
         r.append(item)
     return r
 
@@ -224,7 +224,7 @@ def get_all_inventory ():
     for item in cursor:
         item.pop('_id')
         item['acquired_date'] = item['acquired_date'].isoformat() + "Z"
-        item['sale_price_date'] = item['sale_price_date'].isoformat() + "Z"
+        item['sale_price_date'] = item['sale_price_date'].isoformat() + "Z" if item['sale_price_date'] != "" else ""
         r.append(item)
 
     return r
@@ -241,7 +241,7 @@ def get_inventory_info ():
     if item == None:
         return flask.Response('{"error": "Item ID not found"}', status=404)
     item.pop("_id", None)
-    item['sale_price_date'] = item['sale_price_date'].isoformat() + 'Z'
-    item['sale_date'] = item['sale_date'].isoformat() + 'Z'
+    item['sale_price_date'] = item['sale_price_date'].isoformat() + "Z" if item['sale_price_date'] != "" else ""
+    item['sale_date'] = item['sale_date'].isoformat() + 'Z' if item['sale_date'] != "" else ""
     item['acquired_date'] = item['acquired_date'].isoformat() + 'Z'
     return item
