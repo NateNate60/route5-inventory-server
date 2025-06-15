@@ -26,5 +26,6 @@ app.config["JWT_TOKEN_LOCATION"] = ["headers"]
 app.config["JWT_SECRET_KEY"] = "super-secret"  # Change this in your code!
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(minutes=20)
 app.config["JWT_REFRESH_TOKEN_EXPIRES"] = timedelta(days=30)
+app.config["JWT_ERROR_MESSAGE_KEY"] = "error"
 
 flask_cors.CORS(app)
