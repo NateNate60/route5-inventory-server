@@ -29,6 +29,7 @@ def get_transaction ():
     return item
 
 @transactions.route("/v1/transaction/buys")
+@jwt_required()
 def get_buy_transactions ():
 
     
@@ -55,6 +56,7 @@ def get_buy_transactions ():
     return data
 
 @transactions.route("/v1/transaction/sales")
+@jwt_required()
 def get_sale_transactions ():
     start_date = flask.request.args.get("start_date")
     end_date = flask.request.args.get("end_date")
