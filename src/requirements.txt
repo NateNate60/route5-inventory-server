@@ -5,3 +5,4 @@ requests
 pip-system-certs
 passlib
 flask-jwt-extended
+mysql-connector-python

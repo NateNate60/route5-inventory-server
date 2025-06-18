@@ -11,6 +11,7 @@ from handlers.transactions import transactions
 from handlers.psa import psa
 from handlers.login import login
 from handlers.users import users
+from handlers.prices import prices
 
 app = flask.Flask(__name__)
 
@@ -19,6 +20,7 @@ app.register_blueprint(transactions)
 app.register_blueprint(psa)
 app.register_blueprint(login)
 app.register_blueprint(users)
+app.register_blueprint(prices)
 
 jwt = flask_jwt_extended.JWTManager(app)
 app.config["JWT_COOKIE_SECURE"] = not TEST
