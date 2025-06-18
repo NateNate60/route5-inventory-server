@@ -37,41 +37,35 @@ def process_update ():
                 # This is the first row and contains column headers
                 continue
             elif "Unopened" == row[7]:
-                cursor.execute("UPDATE sealed SET sealed_market_price = %s, sealed_low_price = %s WHERE tcg_id = %s",
-                               (int(float(row[8]) * 100), int(float(row[11]) * 100), row[0]))
+                cursor.execute("INSERT INTO sealed VALUES (%s, %s, %s, %s, %s) ON DUPLICATE KEY UPDATE " \
+                                "sealed_market_price = %s," \
+                                "sealed_low_price = %s", (
+                                row[0],
+                                "000000000000",
+                                row[3],
+                                int(float(row[8]) * 100),
+                                int(float(row[11]) * 100),
+                                int(float(row[8]) * 100),
+                                int(float(row[11]) * 100)
+                                ))
                 MYSQL.commit()
-                if (cursor.rowcount == 0):
-                    try: 
-                        cursor.execute("INSERT INTO sealed VALUES (%s, %s, %s, %s, %s)", (
-                                        row[0],
-                                        "000000000000",
-                                        row[3],
-                                        int(float(row[8]) * 100),
-                                        int(float(row[11]) * 100)
-                                        ))
-                        MYSQL.commit()
-                    except IntegrityError:
-                        pass
             elif "Near Mint" in row[7]:
-                cursor.execute("UPDATE pokemon SET nm_market_price = %s WHERE tcg_id = %s",
-                               (int(float(row[8]) * 100), row[0]))
+                attribute = "".join(row[7].split(" ")[2:])
+                cursor.execute("INSERT INTO pokemon VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s) " \
+                                "ON DUPLICATE KEY UPDATE " \
+                                "nm_market_price = %s", (
+                                row[0],
+                                # Column 1 always says "pokemon"
+                                row[2],
+                                row[3],
+                                # Column 4 is blank
+                                row[5],
+                                int(float(row[8]) * 100),
+                                0, 0, 0, 0, attribute,
+                                int(float(row[8]) * 100)
+                                ))
                 MYSQL.commit()
-                if (cursor.rowcount == 0):
-                    attribute = "".join(row[7].split(" ")[2:])
-                    try:
-                        cursor.execute("INSERT INTO pokemon VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)", (
-                                        row[0],
-                                        # Column 1 always says "pokemon"
-                                        row[2],
-                                        row[3],
-                                        # Column 4 is blank
-                                        row[5],
-                                        int(float(row[8]) * 100),
-                                        0, 0, 0, 0, attribute
-                                        ))
-                        MYSQL.commit()
-                    except IntegrityError:
-                         pass
+                
             elif "Damaged" in row[7]:
                 cursor.execute("UPDATE pokemon SET dm_market_price = %s WHERE tcg_id = %s",
                                (row[8], row[0]))
