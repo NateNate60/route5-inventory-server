@@ -2,23 +2,21 @@ USE route5prices;
 
 CREATE TABLE IF NOT EXISTS pokemon (
     tcg_id CHAR(7) NOT NULL PRIMARY KEY,
-    set_name VARCHAR(256) NOT NULL,
-    card_name VARCHAR(256) NOT NULL,
-    card_number VARCHAR(10) NOT NULL,
-    condition CHAR(2) NOT NULL,
-    tcg_market_price INTEGER NOT NULL,
-    tcg_low_price INTEGER NOT NULL
+    set_name VARCHAR(255) NOT NULL,
+    card_name VARCHAR(255) NOT NULL,
+    card_number VARCHAR(31) NOT NULL,
+    nm_market_price INTEGER,
+    lp_market_price INTEGER,
+    mp_market_price INTEGER,
+    hp_market_price INTEGER,
+    dm_market_price INTEGER,
+    attribute VARCHAR(255)
 );
 
 CREATE TABLE IF NOT EXISTS sealed (
-    upc CHAR(12) NOT NULL PRIMARY KEY,
-    item_name VARCHAR(256) NOT NULL,
-    tcg_market_price INTEGER NOT NULL,
-    tcg_low_price INTEGER NOT NULL
+    tcg_id CHAR(7) NOT NULL PRIMARY KEY,
+    upc CHAR(12),
+    item_name VARCHAR(255) NOT NULL,
+    sealed_market_price INTEGER,
+    sealed_low_price INTEGER
 );
-
-CREATE TABLE IF NOT EXISTS users (
-    username VARCHAR(31) NOT NULL PRIMARY KEY,
-    password_hash CHAR(60) NOT NULL,
-    roles VARCHAR(256)
-)
