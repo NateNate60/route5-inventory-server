@@ -1,5 +1,6 @@
 import flask
 import datetime
+import tcgplayer
 from flask_jwt_extended import jwt_required
 
 from database import DATABASE
@@ -14,6 +15,14 @@ def add_item ():
     items = []
     price_total = 0
     for item in data["items"]:
+        # If a tcgplayer ID is provided, fetch info from the database instead
+        if "tcg_id" in item:
+            card = tcgplayer.card_database_by_id(item["tcg_id"])
+            item["description"] = card.card_name
+            if item["type"] == "sealed":
+                # Add this UPC to the card database
+                tcgplayer.associate_upc(item["tcg_id"], item["id"])
+
         item["acquired_date"] = datetime.datetime.now(datetime.timezone.utc)
         item["consignor_name"] = ""
         item["consignor_contact"] = ""
@@ -36,6 +45,7 @@ def add_item ():
             if result.modified_count == 0:
                 item["sale_price_date"] = datetime.datetime.now(datetime.timezone.utc)
                 DATABASE["inventory"].insert_one(item)
+            
         else:
             item["sale_price_date"] = datetime.datetime.now(datetime.timezone.utc)
             item["quantity"] = 1

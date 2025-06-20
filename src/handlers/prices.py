@@ -4,18 +4,13 @@ import datetime
 from flask_jwt_extended import jwt_required
 from werkzeug.utils import secure_filename
 from database import MYSQL
-from mysql.connector.errors import IntegrityError
-
-from tcgplayer import search_card_database_by_name
+import tcgplayer
 
 prices = flask.Blueprint('prices', __name__)
 
 @prices.route("/v1/prices/update", methods=["POST"])
-# @jwt_required()
+@jwt_required()
 def process_update ():
-
-    t = search_card_database_by_name("Umbreon VMAX 215")
-
     if "file" not in flask.request.files:
         return flask.Response('{"error": "No file uploaded"}', status=400)
     file = flask.request.files["file"]
@@ -119,3 +114,21 @@ def process_update ():
     return flask.jsonify({
         "updated_records": count
     })
+
+@prices.route("/v1/prices/search", methods=["GET"])
+@jwt_required()
+def search_db ():
+    query = flask.request.args.get("query")
+    tcg_id = flask.request.args.get("tcg_id")
+    if query is None and tcg_id is None:
+        return flask.Response('{"error": "No query parameter or tcg_id provided"}', status=400)
+    
+    if tcg_id is None:
+        cards = tcgplayer.search_card_database(query)
+    else:
+        card = tcgplayer.card_database_by_id(tcg_id)
+        if card is not None:
+            cards = [card]
+        else:
+            cards = []
+    return flask.jsonify([card.to_dict() for card in cards])
