@@ -251,6 +251,44 @@ def get_inventory_info ():
     if item == None:
         return flask.Response('{"error": "Item ID not found"}', status=404)
     item.pop("_id", None)
+    if item["type"] == "sealed":
+        sealed = tcgplayer.search_sealed_database(item["id"], True)[0]
+        item["tcg_price_data"] = {
+            "tcgID": sealed.tcg_id,
+            "canonicalName": sealed.item_name,
+            "setName": sealed.set_name,
+            "attribute": "",
+            "priceData": {
+                "sealedMarketPrice": sealed.sealed_market_price,
+                "sealedLowPrice": sealed.sealed_low_price
+            }
+        }
+    elif item["type"] == "card":
+        if "tcg_price_data" in item:
+            # tcgID is known
+            card = tcgplayer.card_database_by_id(item["tcg_price_data"]["tcgID"])
+        else:
+            result = tcgplayer.search_card_database(item["description"])
+            if len(result) != 0:
+                card = result[0]
+                item["tcg_price_data"] = {
+                    "tcgID": card.tcg_id,
+                    "canonicalName": card.card_name,
+                    "setName": card.set_name,
+                    "attribute": card.attribute
+                }
+            else:
+                card = None
+        if type(card) is tcgplayer.Card:
+            item["tcg_price_data"]["priceData"] = {
+                "nmMarketPrice": card.nm_market_price,
+                "lpMarketPrice": card.lp_market_price,
+                "mpMarketPrice": card.mp_market_price,
+                "hpMarketPrice": card.hp_market_price,
+                "dmMarketPrice": card.dm_market_price
+            }
+
+
     item['sale_price_date'] = item['sale_price_date'].isoformat() + "Z" if item['sale_price_date'] != "" else ""
     item['sale_date'] = item['sale_date'].isoformat() + 'Z' if item['sale_date'] != "" else ""
     item['acquired_date'] = item['acquired_date'].isoformat() + 'Z'
