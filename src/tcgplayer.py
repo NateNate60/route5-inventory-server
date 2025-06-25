@@ -23,6 +23,23 @@ class Card:
         """
         return asdict(self)
 
+@dataclass
+class Sealed:
+    tcg_id: str
+    set_name: str
+    upc: str
+    item_name: str
+    sealed_market_price: int
+    sealed_low_price: int
+
+    def to_dict (self):
+        """
+        Return a Sealed object as a dictionary.
+
+        @return dict[str, str|int]: This Sealed object as a dictionary.
+        """
+        return asdict(self)
+
 def search_card_database (query: str) -> list[Card]:
     """
     Search the database by card name, returning a list of cards whose name, 
@@ -37,9 +54,9 @@ def search_card_database (query: str) -> list[Card]:
     sql = ""
     vars: list[str] = []
     for word in name_words:
-        sql += "AND CONCAT(set_name, ' ', card_name, ' ', card_number, ' ', attribute) LIKE CONCAT('%', %s ,'%')"
+        sql += "AND CONCAT(set_name, ' ', card_name, ' ', card_number, ' ', attribute) LIKE CONCAT('%', %s ,'%') "
         vars.append(word)
-    sql = "SELECT * FROM pokemon WHERE 1 " + sql
+    sql = "SELECT * FROM pokemon WHERE 1 " + sql + " LIMIT 20"
     cursor.execute(sql, vars)
 
     db_result = cursor.fetchall()
@@ -60,16 +77,34 @@ def search_card_database (query: str) -> list[Card]:
         r.append(card)
     return r
 
-def card_database_by_id (tcg_id: str) -> Card | None:
+def card_database_by_id (tcg_id: str) -> Card | Sealed | None:
     """
     Query the card database by id
 
-    @param tcg_id (str): The TCG Player ID of the card (use the ID for the NM version only)
-    @return Card|None: A Card object if the card was found, otherwise None
+    @param tcg_id (str): The TCG Player ID or UPC of the card (use the ID for the NM version only) or sealed product
+    @return Card|Sealed|None: A Card or Sealed object if the item was found, otherwise None
     """
     cursor = MYSQL.cursor()
     cursor.execute("SELECT * FROM pokemon WHERE tcg_id = %s", (tcg_id,))
     db_result = cursor.fetchall()
+    if cursor.rowcount == 0:
+        # Not in the pokemon table, try sealed
+        cursor.execute("SELECT * FROM sealed WHERE tcg_id = %s OR (upc = %s AND upc != '')", (tcg_id, tcg_id))
+        db_result = cursor.fetchall()
+        if cursor.rowcount == 0:
+            # Not in the sealed table either
+            return None
+        for result in db_result:
+            item = Sealed(
+                tcg_id=result[0],
+                set_name=result[1],
+                upc=result[2],
+                item_name=result[3],
+                sealed_market_price=result[4],
+                sealed_low_price=result[5]
+            )
+            return item
+
     item: Card = None
     for result in db_result:
         card = Card(
@@ -87,6 +122,34 @@ def card_database_by_id (tcg_id: str) -> Card | None:
         item = card
         break
     return item
+
+def search_sealed_database (query: str, upc_search: bool = False) -> list[Sealed]:
+    """
+    Search the database by product name, returning a list of products whose
+    product name contains the query
+
+    @param query (str): The query string
+    @param upc_search (bool): Whether to search by UPC only
+    @return list[Card]: A list of Card objects
+    """
+    cursor = MYSQL.cursor()
+    if upc_search:
+        cursor.execute("SELECT * FROM sealed WHERE upc = %s", (query,))
+    else:
+        cursor.execute("SELECT * FROM sealed WHERE item_name LIKE CONCAT('%', %s ,'%') LIMIT 10",
+                    (query,))
+    db_result = cursor.fetchall()
+    items: list[Sealed] = []
+    for result in db_result:
+        items.append(Sealed(
+            tcg_id=result[0],
+            set_name=result[1],
+            upc=result[2],
+            item_name=result[3],
+            sealed_market_price=result[4],
+            sealed_low_price=result[5]
+        ))
+    return items
 
 def associate_upc (tcg_id: str, upc: str) -> int:
     """

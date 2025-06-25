@@ -37,11 +37,12 @@ def process_update ():
                 # This is the first row and contains column headers
                 continue
             elif "Unopened" == row[7]:
-                cursor.execute("INSERT INTO sealed VALUES (%s, %s, %s, %s, %s) ON DUPLICATE KEY UPDATE " \
+                cursor.execute("INSERT INTO sealed VALUES (%s, %s, %s, %s, %s, %s) ON DUPLICATE KEY UPDATE " \
                                 "sealed_market_price = %s," \
                                 "sealed_low_price = %s", (
                                 row[0],
-                                "000000000000",
+                                row[2],
+                                "",
                                 row[3],
                                 int(float(row[8]) * 100),
                                 int(float(row[11]) * 100),
@@ -120,11 +121,20 @@ def process_update ():
 def search_db ():
     query = flask.request.args.get("query")
     tcg_id = flask.request.args.get("tcg_id")
-    if query is None and tcg_id is None:
-        return flask.Response('{"error": "No query parameter or tcg_id provided"}', status=400)
-    
-    if tcg_id is None:
-        cards = tcgplayer.search_card_database(query)
+    upc = flask.request.args.get("upc")
+    product_type = flask.request.args.get("type")
+    if (query is None and tcg_id is None) or product_type is None:
+        return flask.Response('{"error": "No query parameter or tcg_id provided, or no product type provided"}', status=400)
+    if upc is not None:
+        product = tcgplayer.search_sealed_database(upc, upc_search=True)
+        cards = product
+    elif tcg_id is None:
+        if product_type == "card":
+            cards = tcgplayer.search_card_database(query)
+        elif product_type == "sealed":
+            cards = tcgplayer.search_sealed_database(query)
+        else:
+            cards = []
     else:
         card = tcgplayer.card_database_by_id(tcg_id)
         if card is not None:
