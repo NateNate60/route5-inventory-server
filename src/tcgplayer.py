@@ -58,8 +58,8 @@ def search_card_database (query: str) -> list[Card]:
         vars.append(word)
     sql = "SELECT * FROM pokemon WHERE 1 " + sql + " LIMIT 20"
     cursor.execute(sql, vars)
-
     db_result = cursor.fetchall()
+    MYSQL.commit()
     r: list[Card] = []
     for result in db_result:
         card = Card(
@@ -91,6 +91,7 @@ def card_database_by_id (tcg_id: str) -> Card | Sealed | None:
         # Not in the pokemon table, try sealed
         cursor.execute("SELECT * FROM sealed WHERE tcg_id = %s OR (upc = %s AND upc != '')", (tcg_id, tcg_id))
         db_result = cursor.fetchall()
+        MYSQL.commit()
         if cursor.rowcount == 0:
             # Not in the sealed table either
             return None
@@ -139,6 +140,7 @@ def search_sealed_database (query: str, upc_search: bool = False) -> list[Sealed
         cursor.execute("SELECT * FROM sealed WHERE item_name LIKE CONCAT('%', %s ,'%') LIMIT 10",
                     (query,))
     db_result = cursor.fetchall()
+    MYSQL.commit()
     items: list[Sealed] = []
     for result in db_result:
         items.append(Sealed(
