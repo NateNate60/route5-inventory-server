@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS pokemon (
 
 CREATE TABLE IF NOT EXISTS sealed (
     tcg_id INTEGER NOT NULL PRIMARY KEY,
+    set_name VARCHAR(255) NOT NULL,
     upc CHAR(12),
     item_name VARCHAR(255) NOT NULL,
     sealed_market_price INTEGER,
