@@ -2,6 +2,7 @@ import flask
 from datetime import datetime, timezone
 from passlib.hash import bcrypt
 from flask_jwt_extended import jwt_required
+from authentication import admin_required
 
 from database import DATABASE
 
@@ -25,6 +26,7 @@ def get_users ():
 
 @users.route("/v1/users/add", methods=["POST"])
 @jwt_required()
+@admin_required()
 def add_user ():
     data = flask.request.get_json()
 
@@ -35,12 +37,13 @@ def add_user ():
 
     roles = data['roles']
 
-    DATABASE['users'].insert_one({
+    DATABASE['users'].find_one_and_replace( {"username": username},
+    {
         "username": username,
         "password_hash": bcrypt.hash(password),
         "roles": roles,
-        "created": datetime.now(tz=timezone.utc).isoformat() + "Z",
-        "last_logged_in": datetime.now(tz=timezone.utc).isoformat() + "Z"
-    })
+        "created": datetime.now(tz=timezone.utc),
+        "last_logged_in": datetime.now(tz=timezone.utc)
+    }, upsert=True)
 
     return flask.Response("{}", status=201)

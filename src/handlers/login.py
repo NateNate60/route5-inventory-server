@@ -24,8 +24,12 @@ def password_login () :
     if not bcrypt.verify(password, record["password_hash"]) :
         return flask.Response('{"error": "Password is incorrect"}', status=401)
     
-    access_token = flask_jwt_extended.create_access_token(identity=username)
-    refresh_token = flask_jwt_extended.create_refresh_token(identity=username)
+    access_token = flask_jwt_extended.create_access_token(identity=username, additional_claims={
+        "is_admin": "admin" in record["roles"]
+    })
+    refresh_token = flask_jwt_extended.create_refresh_token(identity=username, additional_claims={
+        "is_admin": "admin" in record["roles"]
+    })
     response = flask.jsonify({
         "access_token": access_token,
         "refresh_token": refresh_token
@@ -37,7 +41,10 @@ def password_login () :
 @flask_jwt_extended.jwt_required(refresh=True)
 def get_access_token ():
     identity = flask_jwt_extended.get_jwt_identity()
-    access_token = flask_jwt_extended.create_access_token(identity=identity)
+    jwt = flask_jwt_extended.get_jwt()
+    access_token = flask_jwt_extended.create_access_token(identity=identity, additional_claims={
+        "is_admin": jwt["is_admin"]
+    })
     return flask.jsonify(access_token=access_token)
 
 @login.route("/v1/login/tokens/access/validity", methods=["GET"])
