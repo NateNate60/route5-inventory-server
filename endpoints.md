@@ -432,3 +432,129 @@ JSON data in the following form
 ```
 
 **Warning**: PSA API rate limits only allow 100 queries per day without payment.
+
+### POST `/v1/prices/update`
+
+Update the TCG Player price database based on a CSV file obtained from the Pricing tab of the seller portal.
+
+The CSV file can be obtained by going to the TCG Player seller portal Pricing tab, clicked "export filtered CSV", then selecting "Pokemon" or "Pokemon Japan" under Category. It is advised to untick "export only from live inventory" and to tick "do not compare against price".
+
+Only admins can call this endpoint.
+
+**Warning**: This endpoint will block until it has finished processing the CSV file, which could take a long time, especially because the CSV file is usually contains hundreds of thousands of entries. Therefore, it is recommended to call it asynchronously instead of awaiting it to return.
+
+#### Request body
+
+A CSV file (`"file"`) which contains the CSV file described above.
+
+#### Response
+
+JSON data in the following form
+
+```json
+{
+    "updated_records": 123456
+}
+```
+
+### GET `/v1/prices/search`
+
+Search the cached TCG Player database for pricing and product data.
+
+#### Request parameters
+
+**Note**: Either `query`, `upc`, or `tcg_id` must be provided.
+
+- `query` (`str`, optional): A query string to search for text contained in the product's set name, canonical TCG Player name, or card number.
+- `tcg_id` (`str`, optional): The product's TCG Player ID
+- `upc` (`str`, optional): The product's UPC (only searches sealed products)
+- `type` (`str`): Either `card` or `sealed`.
+
+#### Response
+
+A JSON array of one or more items from the pricing database.
+
+Sealed items are presented thusly:
+
+```json
+{
+    "item_name": "Journey Together Elite Trainer Box",
+    "sealed_low_price": 7498,
+    "sealed_market_price": 7319,
+    "set_name": "SV09: Journey Together",
+    "tcg_id": 8492745,
+    "upc": "196214108554"
+}
+```
+
+Singles are presented thusly:
+
+```json
+{
+    "attribute": "Holofoil",
+    "card_name": "Umbreon VMAX (Alternate Art Secret)",
+    "card_number": "215/203",
+    "dm_market_price": 79000,
+    "hp_market_price": 0,
+    "lp_market_price": 137286,
+    "mp_market_price": 114493,
+    "nm_market_price": 144930,
+    "set_name": "SWSH07: Evolving Skies",
+    "tcg_id": 5150168
+}
+```
+
+When there is not sufficient data to give a market price, its price will be `0`.
+
+### PUT `/v1/prices/associateupc`
+
+Associate a UPC with a sealed product. Does nothing if the product already has a UPC associated with it
+
+#### Request parameters
+
+- `tcg_id` (`str`): The TCG Player ID of the product
+- `upc` (`str`): The product's UPC
+
+### GET `/v1/users`
+
+Get a list of all users.
+
+Only admins can call this endpoint.
+
+#### Response
+
+A list of JSON data in the following format:
+
+```json
+{
+    "created": "2025-05-30T16:22:45.652000Z",
+    "last_logged_in": "2025-05-30T16:22:45.652000Z",
+    "roles": "admin",
+    "username": "test"
+}
+```
+
+## POST `/v1/users/add`
+
+Add or edit an existing user. If a user with the same username already exists, they will be replaced.
+
+Only admins can call this endpoint.
+
+#### Request body
+
+A JSON object with the following data:
+
+- `username` (`str`): The username of the user to add or edit
+- `password` (`str`): The password of the user to add or edit
+- `roles` (`str`): `"admin"` if this user is to be an admin, empty string otherwise
+
+
+## DELETE `/v1/users/rm`
+
+Delete a user.
+
+Only admins can call this endpoint. 
+
+#### Request parameters
+
+- `username` (`str`): The username of the user to delete
