@@ -72,7 +72,7 @@ def search_card_database (query: str) -> list[Card]:
             mp_market_price=result[6],
             hp_market_price=result[7],
             dm_market_price=result[8],
-            attribute=result[0]
+            attribute=result[9]
         )
         r.append(card)
     return r
