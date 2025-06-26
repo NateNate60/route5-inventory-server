@@ -4,11 +4,13 @@ import datetime
 from flask_jwt_extended import jwt_required
 from werkzeug.utils import secure_filename
 from database import MYSQL
+from authentication import admin_required
 import tcgplayer
 
 prices = flask.Blueprint('prices', __name__)
 
 @prices.route("/v1/prices/update", methods=["POST"])
+@admin_required()
 @jwt_required()
 def process_update ():
     if "file" not in flask.request.files:
@@ -142,3 +144,14 @@ def search_db ():
         else:
             cards = []
     return flask.jsonify([card.to_dict() for card in cards])
+
+@prices.route("/v1/prices/associateupc", methods=["PUT"])
+@admin_required()
+@jwt_required()
+def associate_upc_web():
+    tcg_id = flask.request.args.get("tcg_id")
+    upc = flask.request.args.get("upc")
+    if upc is None or tcg_id is None:
+        return flask.Response('{"error": "No upc provided or no tcg_id provided"}', status=400)
+    tcgplayer.associate_upc(tcg_id, upc)
+    return flask.Response('{}', status=200)
