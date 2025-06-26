@@ -51,7 +51,7 @@ def add_user ():
 @users.route("/v1/users/rm", methods=["DELETE"])
 @jwt_required()
 @admin_required()
-def add_user ():
+def rm_user ():
     username = flask.request.args.get("username")
 
     if username is None:
