@@ -47,3 +47,16 @@ def add_user ():
     }, upsert=True)
 
     return flask.Response("{}", status=201)
+
+@users.route("/v1/users/rm", methods=["POST"])
+@jwt_required()
+@admin_required()
+def add_user ():
+    data = flask.request.get_json()
+
+    if "username" not in data:
+        return flask.Response('{"error": "Username not provided"}', status=400)
+    username = data['username']
+    DATABASE['users'].delete_one({"username": username})
+
+    return flask.Response("{}", status=204)
