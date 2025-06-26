@@ -58,4 +58,4 @@ def rm_user ():
         return flask.Response('{"error": "Username not provided"}', status=400)
     DATABASE['users'].delete_one({"username": username})
 
-    return flask.Response("{}", status=204)
+    return flask.Response("{}", status=200)
