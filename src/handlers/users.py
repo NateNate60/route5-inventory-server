@@ -48,15 +48,14 @@ def add_user ():
 
     return flask.Response("{}", status=201)
 
-@users.route("/v1/users/rm", methods=["POST"])
+@users.route("/v1/users/rm", methods=["DELETE"])
 @jwt_required()
 @admin_required()
 def add_user ():
-    data = flask.request.get_json()
+    username = flask.request.args.get("username")
 
-    if "username" not in data:
+    if username is None:
         return flask.Response('{"error": "Username not provided"}', status=400)
-    username = data['username']
     DATABASE['users'].delete_one({"username": username})
 
     return flask.Response("{}", status=204)
