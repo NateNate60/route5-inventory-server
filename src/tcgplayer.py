@@ -1,6 +1,6 @@
 from dataclasses import dataclass, asdict
-
-from database import MYSQL
+from mysql import connector
+import config
 
 @dataclass
 class Card:
@@ -50,6 +50,7 @@ def search_card_database (query: str) -> list[Card]:
     @return list[Card]: A list of Card objects
     """
     name_words = query.split(' ')
+    MYSQL = connector.connect(host="localhost", user=config.MYSQL_USER, password=config.MYSQL_PASSWORD, database="route5prices", connection_timeout=60)
     cursor = MYSQL.cursor()
     sql = ""
     vars: list[str] = []
@@ -84,6 +85,7 @@ def card_database_by_id (tcg_id: str) -> Card | Sealed | None:
     @param tcg_id (str): The TCG Player ID or UPC of the card (use the ID for the NM version only) or sealed product
     @return Card|Sealed|None: A Card or Sealed object if the item was found, otherwise None
     """
+    MYSQL = connector.connect(host="localhost", user=config.MYSQL_USER, password=config.MYSQL_PASSWORD, database="route5prices", connection_timeout=60)
     cursor = MYSQL.cursor()
     cursor.execute("SELECT * FROM pokemon WHERE tcg_id = %s", (tcg_id,))
     db_result = cursor.fetchall()
@@ -133,6 +135,7 @@ def search_sealed_database (query: str, upc_search: bool = False) -> list[Sealed
     @param upc_search (bool): Whether to search by UPC only
     @return list[Card]: A list of Card objects
     """
+    MYSQL = connector.connect(host="localhost", user=config.MYSQL_USER, password=config.MYSQL_PASSWORD, database="route5prices", connection_timeout=60)
     cursor = MYSQL.cursor()
     if upc_search:
         cursor.execute("SELECT * FROM sealed WHERE upc = %s", (query,))
@@ -161,6 +164,7 @@ def associate_upc (tcg_id: str, upc: str) -> int:
     @param upc (str): The 12-digit UPC of the item
     @return int: The number of records updated (should be 0 or 1)
     """
+    MYSQL = connector.connect(host="localhost", user=config.MYSQL_USER, password=config.MYSQL_PASSWORD, database="route5prices", connection_timeout=60)
     if len(upc) != 12:
         return 0
     cursor = MYSQL.cursor()

@@ -3,8 +3,9 @@ import csv
 import datetime
 from flask_jwt_extended import jwt_required
 from werkzeug.utils import secure_filename
-from database import MYSQL
 from authentication import admin_required
+from mysql import connector
+import config
 import tcgplayer
 
 prices = flask.Blueprint('prices', __name__)
@@ -24,6 +25,7 @@ def process_update ():
     file.save(filename)
 
     with open(filename, "r") as f:
+        MYSQL = connector.connect(host="localhost", user=config.MYSQL_USER, password=config.MYSQL_PASSWORD, database="route5prices", connection_timeout=3600)
         cursor = MYSQL.cursor()
         reader = csv.reader(f)
         count = 0
