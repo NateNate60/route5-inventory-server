@@ -292,17 +292,20 @@ def get_inventory_info ():
         return flask.Response('{"error": "Item ID not found"}', status=404)
     item.pop("_id", None)
     if item["type"] == "sealed":
-        sealed = tcgplayer.search_sealed_database(item["id"], True)[0]
-        item["tcg_price_data"] = {
-            "tcgID": sealed.tcg_id,
-            "canonicalName": sealed.item_name,
-            "setName": sealed.set_name,
-            "attribute": "",
-            "priceData": {
-                "sealedMarketPrice": sealed.sealed_market_price,
-                "sealedLowPrice": sealed.sealed_low_price
+        sealed = tcgplayer.search_sealed_database(item["id"], True)
+        if len(sealed) > 0:
+            sealed = sealed[0]
+            item["tcg_price_data"] = {
+                "tcgID": sealed.tcg_id,
+                "canonicalName": sealed.item_name,
+                "setName": sealed.set_name,
+                "attribute": "",
+                "priceData": {
+                    "sealedMarketPrice": sealed.sealed_market_price,
+                    "sealedLowPrice": sealed.sealed_low_price
+                }
             }
-        }
+        
     elif item["type"] == "card":
         if "tcg_price_data" in item:
             # tcgID is known
