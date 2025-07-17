@@ -15,6 +15,11 @@ def add_item ():
     items = []
     price_total = 0
     for item in data["items"]:
+
+        # Don't process entries with invalid quantity
+        if item["quantity"] < 1:
+            continue
+
         # If a tcgplayer ID is provided, fetch info from the database instead
         if "tcg_id" in item:
             card = tcgplayer.card_database_by_id(item["tcg_id"])
@@ -33,18 +38,28 @@ def add_item ():
                 }, status=400
             )
         if item["type"] == "sealed":
-            # Increment the number of this sealed product in inventory
-            result = DATABASE["inventory"].update_one({"id": item["id"]}, {
-                "$inc": {"quantity": item["quantity"]},
-                "$set": {
-                    "sale_price": item["sale_price"],
-                    "sale_price_date": datetime.datetime.now(datetime.timezone.utc)
-                }
-            })
-            # If nothing was modified, it's not in the database!
-            if result.modified_count == 0:
+            db_entry = DATABASE["inventory"].find_one({"id": item["id"]})
+
+            if db_entry is None:
+                # not in the database, so insert it
                 item["sale_price_date"] = datetime.datetime.now(datetime.timezone.utc)
                 DATABASE["inventory"].insert_one(item)
+            else :
+                # Determine new average cost basis
+                previous_cost_basis = db_entry["acquired_price"] * db_entry["quantity"]
+                new_cost_basis = previous_cost_basis + (item["quantity"] * item["acquired_price"])
+                new_cost_basis_per_unit = new_cost_basis / (item["quantity"] + db_entry["quantity"])
+
+                # Increment the number of this sealed product in inventory
+                DATABASE["inventory"].update_one({"id": item["id"]}, {
+                    "$inc": {"quantity": item["quantity"]},
+                    "$set": {
+                        "acquired_price": new_cost_basis_per_unit,
+                        "sale_price": item["sale_price"],
+                        "sale_price_date": datetime.datetime.now(datetime.timezone.utc)
+                    }
+                })
+                
             
         else:
             item["sale_price_date"] = datetime.datetime.now(datetime.timezone.utc)
@@ -70,6 +85,7 @@ def add_item ():
             "credit_given": data["credit_given"] if "credit_given" in data else 0,
             "acquired_price_total": price_total,
             "payment_method": data["payment_method"] if "payment_method" in data else "unknown",
+            "bulk_total": data["bulk_total"] if "bulk_total" in data else 0,
             "items": items,
             "txid": txid
         }
@@ -143,6 +159,7 @@ def sell_item ():
     json = flask.request.get_json()
     payment_method = json["payment_method"]
     credit_applied = int(json["credit_applied"]) if "credit_applied" in json else 0
+    bulk_total = json["bulk_total"] if "bulk_total" in json else 0
     items = json["items"]
     total_price = 0
     consignments = []
