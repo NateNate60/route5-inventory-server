@@ -211,6 +211,7 @@ def sell_item ():
             "sale_price_total": total_price,
             "credit_applied": credit_applied,
             "payment_method": payment_method,
+            "bulk_total": bulk_total,
             "items": processed_items,
             "txid": txid
         }
