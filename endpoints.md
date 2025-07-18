@@ -558,3 +558,33 @@ Only admins can call this endpoint.
 #### Request parameters
 
 - `username` (`str`): The username of the user to delete
+
+## GET `/v1/settings/rates`
+
+Fetch the buy rates currently stored.
+
+Rates and cutoffs between tiers are structured in the form of arrays. For example, for the cutoffs `[2000, 5000, 10000]`, that means that anything below $20.00 (2,000 cents) is in tier 0, anything from $20.01 to $50.00 is tier 1, anything from $50.01 to $100.00 is tier 2, and anything above $100.00 is tier 3. The rates paid work similarly. For the rate array `[0.5, 0.6, 0.7, 0.8]`, that means 50% is paid on tier 0 items, 60% on tier 1 items, 70% on tier 2 items, and 80% on tier 3 items.
+
+Note that the rate arrays must always be 1 longer than the cutoff arrays.
+
+**Request parameters**
+
+No parameters are required.
+
+### Response
+
+JSON data in the following format:
+
+- `id` (`string`): Always `"rates"`
+- `cutoffs` (`Object`): The cutoffs between different tiers for each of the product types
+    - `card` (`Array<number>`): The monetary cutoffs between the tiers for singles
+    - `slab` (`Array<number>`): The monetary cutoffs between the tiers for graded cards
+    - `sealed` (`Array<number>`): The monetary cutoffs between the tiers for sealed product
+- `cash_rates` (`Object`): The buy rates for when the customer wants to be paid in cash
+    - `card` (`Array<number>`): The amount paid for each tier for singles
+    - `slab` (`Array<number>`): The amount paid for each tier for graded cards
+    - `sealed` (`Array<number>`): The amount paid for each tier for sealed product
+- `credit_rates` (`Object`): The buy rates for when the customer wants store credit.
+    - `card` (`Array<number>`): The amount paid for each tier for singles
+    - `slab` (`Array<number>`): The amount paid for each tier for graded cards
+    - `sealed` (`Array<number>`): The amount paid for each tier for sealed product
