@@ -13,7 +13,7 @@ def add_item ():
     
     data = flask.request.get_json()
     items = []
-    price_total = 0
+    price_total = data["bulk_total"]
     for item in data["items"]:
 
         # Don't process entries with invalid quantity
