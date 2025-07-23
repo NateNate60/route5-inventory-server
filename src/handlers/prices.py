@@ -68,14 +68,29 @@ def process_update ():
                     hp_row[8] = 0
                 if dm_row[8] == "":
                     dm_row[8] = 0
-                cursor.execute("INSERT INTO pokemon VALUES (%(tcgid)s, %(setname)s, %(cardname)s, %(cardnumber)s, "
-                                "%(nm)s, %(lp)s, %(mp)s, %(hp)s, %(dm)s, %(attribute)s) " \
+                if lp_row[11] == "":
+                    lp_row[11] = 0
+                if mp_row[11] == "":
+                    mp_row[11] = 0
+                if hp_row[11] == "":
+                    hp_row[11] = 0
+                if dm_row[11] == "":
+                    dm_row[11] = 0
+                cursor.execute("INSERT INTO pokemon VALUES (%(tcgid)s, %(setname)s, %(cardname)s, %(cardnumber)s, " \
+                                "%(nm)s, %(lp)s, %(mp)s, %(hp)s, %(dm)s, %(nml)s, " \
+                                "%(lpl)s, %(mpl)s, %(hpl)s, %(dml)s, %(attribute)s) " \
                                 "ON DUPLICATE KEY UPDATE " \
                                 "nm_market_price = %(nm)s, " \
                                 "lp_market_price = %(lp)s, " \
                                 "mp_market_price = %(mp)s, " \
                                 "hp_market_price = %(hp)s, " \
-                                "dm_market_price = %(dm)s " , {
+                                "dm_market_price = %(dm)s, "  \
+                                "nm_low_price = %(nml)s, " \
+                                "lp_low_price = %(lpl)s, " \
+                                "mp_low_price = %(mpl)s, " \
+                                "hp_low_price = %(hpl)s, " \
+                                "dm_low_price = %(dml)s "  \
+                                    , {
                                     "tcgid": row[0],
                                     # Column 1 always says "pokemon"
                                     "setname": row[2],
@@ -86,7 +101,12 @@ def process_update ():
                                     "lp": int(float(lp_row[8]) * 100),
                                     "mp": int(float(mp_row[8]) * 100),
                                     "hp": int(float(hp_row[8]) * 100),
-                                    "dm": int(float(dm_row[8]) * 100), 
+                                    "dm": int(float(dm_row[8]) * 100),
+                                    "nml": int(float(row[11]) * 100),
+                                    "lpl": int(float(lp_row[11]) * 100),
+                                    "mpl": int(float(mp_row[11]) * 100),
+                                    "hpl": int(float(hp_row[11]) * 100),
+                                    "dml": int(float(dm_row[11]) * 100), 
                                     "attribute": attribute,
                                 })
                 MYSQL.commit()

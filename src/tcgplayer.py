@@ -13,6 +13,11 @@ class Card:
     mp_market_price: int
     hp_market_price: int
     dm_market_price: int
+    nm_low_price: int
+    lp_low_price: int
+    mp_low_price: int
+    hp_low_price: int
+    dm_low_price: int
     attribute: str
 
     def to_dict (self):
@@ -73,7 +78,12 @@ def search_card_database (query: str) -> list[Card]:
             mp_market_price=result[6],
             hp_market_price=result[7],
             dm_market_price=result[8],
-            attribute=result[9]
+            nm_low_price=result[9],
+            lp_low_price=result[10],
+            mp_low_price=result[11],
+            hp_low_price=result[12],
+            dm_low_price=result[13],
+            attribute=result[14]
         )
         r.append(card)
     return r
@@ -120,7 +130,12 @@ def card_database_by_id (tcg_id: str) -> Card | Sealed | None:
             mp_market_price=result[6],
             hp_market_price=result[7],
             dm_market_price=result[8],
-            attribute=result[0]
+            nm_low_price=result[9],
+            lp_low_price=result[10],
+            mp_low_price=result[11],
+            hp_low_price=result[12],
+            dm_low_price=result[13],
+            attribute=result[14]
         )
         item = card
         break

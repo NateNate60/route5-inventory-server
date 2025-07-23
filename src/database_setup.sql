@@ -10,6 +10,11 @@ CREATE TABLE IF NOT EXISTS pokemon (
     mp_market_price INTEGER,
     hp_market_price INTEGER,
     dm_market_price INTEGER,
+    nm_low_price INTEGER,
+    lp_low_price INTEGER,
+    mp_low_price INTEGER,
+    hp_low_price INTEGER,
+    dm_low_price INTEGER,
     attribute VARCHAR(255)
 );
 
