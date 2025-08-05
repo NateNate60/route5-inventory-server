@@ -180,7 +180,7 @@ def associate_upc (tcg_id: str, upc: str) -> int:
     @return int: The number of records updated (should be 0 or 1)
     """
     MYSQL = connector.connect(host="localhost", user=config.MYSQL_USER, password=config.MYSQL_PASSWORD, database="route5prices", connection_timeout=60)
-    if len(upc) != 12:
+    if len(upc) != 12 and not (len(upc) == 13 and upc[0] == '1'):
         return 0
     cursor = MYSQL.cursor()
     cursor.execute("UPDATE sealed SET upc = %s WHERE tcg_id = %s AND upc = ''", 

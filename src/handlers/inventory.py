@@ -125,7 +125,7 @@ def consign_item ():
                 "error": "Invalid item type"
             }, status=400
         )
-    if len(item["id"]) == 12:
+    if len(item["id"]) == 12 or (len(item['id']) == 13 and item[id][0] != '1'):
         # This is a UPC and should be rejected
         return flask.Response(
             {
@@ -196,8 +196,9 @@ def sell_item ():
         # If the item is sealed product don't set the price of the 
         # remaining units to be the price this unit was sold at.
         set_data = {"sale_date": datetime.datetime.now(datetime.timezone.utc)}
-        if len(item['id']) != 12:
-            # It's not sealed product if the ID isn't a 12-digit UPC
+        if len(item['id']) != 12 and not (len(item['id']) == 13 and item['id'][0] == '1'):
+            # It's not sealed product if the ID isn't a 12-digit UPC or EAN-13
+            # Foreign products have an EAN-13 which generally will not begin with a 1
             set_data["sale_price"] = price
 
         DATABASE["inventory"].update_one({"id": item["id"]},  {
