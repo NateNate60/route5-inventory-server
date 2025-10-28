@@ -1,8 +1,9 @@
 flask
 pymongo
 flask-cors
-requests
+httpx
 pip-system-certs
 passlib
 flask-jwt-extended
 mysql-connector-python
+bcrypt==4.3.0
