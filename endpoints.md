@@ -79,7 +79,8 @@ An object with the following data:
     - `acquired_price` (`int`): The price paid for this item, in cents, per unit.
     - `sale_price` (`int`): The price at which this item is available for sale, in cents, per unit.
     - `quantity` (`int`): The number of units of this product acquired. This parameter is ignored if `type` isn't `sealed`.
-- `credit_given` (optional, `int`): The amount of store credit given for this purchase
+    - `tcg_id` (optional, `str`): A TCG Player ID, which can be used to populate the description and type from the TCG Player database
+- `credit_given` (optional, `int`): The portion of the total purchase price, in cents, that was paid to the customer in the form of store credit.
 - `acquired_from_name` (optional, `str`): The name of the person from whom these items were acquired.
 - `acquired_from_contact` (optional, `str`): The telephone number or e-mail address of the person from whom these items were acquired.
 
@@ -100,9 +101,9 @@ A JSON with the transaction ID.
 
 **Note**: These transaction IDs always begin with `TXB`.
 
-### POST `/v1/inventory/remove`
+### POST `/v1/inventory/sell`
 
-Remove one or more items to the inventory.
+Mark one or more items to the inventory as sold.
 
 If an item is sold for a price other than its sale price, the records will be updated to reflect the new sale price. The exception to this is sealed product. Prices on sealed product will not be updated even if they are recorded as having been sold for a lower price.
 
@@ -124,11 +125,12 @@ An object with the following data:
 }
 ```
 
-- `credit_applied` (`int`) indicates that amount of store credit applied to the purchase (in cents).
-- `payment_method` (`str`) is something like `venmo`, `zelle`, `cashapp`, `paypal`, `card`, or `cash` and indicates the method used by the customer to pay the remainder of the balance. Use `cash` if store credit was used to cover the entire purchase.
+- `credit_applied` (`int`): The portion of the sale price, in cents, that was paid for by the customer in the form of store credit.
+- `payment_method` (`str`): Either `venmo`, `zelle`, `cashapp`, `paypal`, `card`, or `cash` and indicates the method used by the customer to pay the remainder of the balance. Use `cash` if store credit was used to cover the entire purchase.
 - `items` is an array of objects with the following properties:
     - `id` (`int`): The asset tag, UPC, cert number of the item to be removed.
-    - `sale_price` (`int`): The total price received for the item, in cents. If a trade was conducted, enter the amount of trade credit given.
+    - `description` (optional, `str`): The name of the item sold, if it is a bulk card. Overwritten by database data for non-bulk cards (whose ID does not begin with `B`).
+    - `sale_price` (`int`): The total price received for the item, in cents. If a trade was conducted, enter the amount at which the card was valued.
     - `quantity` (optional, `int`): The quantity of the sealed product sold. Ignored if the product isn't a sealed product. Defaults to 1.
 
 #### Response
