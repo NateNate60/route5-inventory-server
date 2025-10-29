@@ -13,7 +13,7 @@ def add_item ():
     
     data = flask.request.get_json()
     items = []
-    price_total = data["bulk_total"]
+    price_total = 0
     for item in data["items"]:
 
         # Don't process entries with invalid quantity
@@ -64,9 +64,10 @@ def add_item ():
         else:
             item["sale_price_date"] = datetime.datetime.now(datetime.timezone.utc)
             item["quantity"] = 1
-            result = DATABASE["inventory"].replace_one({"id": item["id"]}, 
-                                                       replacement=item,
-                                                       upsert=True)
+            if item["id"][0] != "B":
+                DATABASE["inventory"].replace_one({"id": item["id"]}, 
+                                                    replacement=item,
+                                                    upsert=True)
             item["quantity"] = 1
         items.append({
             "id": item["id"],
@@ -153,13 +154,13 @@ def consign_item ():
 
     return {"txid": txid}
 
-@inventory.route("/v1/inventory/remove", methods=["POST"])
+@inventory.route("/v1/inventory/sell", methods=["POST"])
 @jwt_required()
 def sell_item ():
     json = flask.request.get_json()
     payment_method = json["payment_method"]
     credit_applied = int(json["credit_applied"]) if "credit_applied" in json else 0
-    bulk_total = json["bulk_total"] if "bulk_total" in json else 0
+    bulk_total = 0
     items = json["items"]
     total_price = 0
     consignments = []
@@ -168,30 +169,38 @@ def sell_item ():
     for item in items:
         id = item["id"]
         price = item["sale_price"]
-        db_item = DATABASE["inventory"].find_one({"id": id})
-        if db_item is None:
-            return flask.Response({
-                "error": "Item with given ID not found"
-            }, status=404)
+        if id[0] != "B":
+            db_item = DATABASE["inventory"].find_one({"id": id})
+            if db_item is None:
+                return flask.Response({
+                    "error": f"Item with ID {id} not found"
+                }, status=404)
 
-        if db_item["type"] != "sealed" or "quantity" not in item or item["quantity"] < 1:
-            item["quantity"] = 1
+            if db_item["type"] != "sealed" or "quantity" not in item or item["quantity"] < 1:
+                item["quantity"] = 1
 
-        if db_item["quantity"] < item["quantity"]:
-            # not enough items in stock to sell this quantity
-            return flask.Response({
-                "error": "Item is out of stock"
-            }, status=404)
-        
-        if db_item["consignor_name"] != "" and db_item["consignor_contact"] != "":
-            # Item is a consignment item and consignor must be paid
-            consignments.append(db_item["id"])
-
+            if db_item["quantity"] < item["quantity"]:
+                # not enough items in stock to sell this quantity
+                return flask.Response({
+                    "error": f"Item ID {id} is out of stock"
+                }, status=404)
+            
+            if db_item["consignor_name"] != "" and db_item["consignor_contact"] != "":
+                # Item is a consignment item and consignor must be paid
+                consignments.append(db_item["id"])
+            
+            item["acquired_price"] = db_item["acquired_price"]
+            item["description"] = db_item["description"]
+        else:
+            bulk_total += price * item["quantity"]
+            item["acquired_price"] = None
         total_price += price * item["quantity"]
-        item["acquired_price"] = db_item["acquired_price"]
-        item["description"] = db_item["description"]
         processed_items.append(item)
     for item in processed_items:
+
+        # Skip bulk
+        if item["id"][0] == "B":
+            continue
 
         # If the item is sealed product don't set the price of the 
         # remaining units to be the price this unit was sold at.
