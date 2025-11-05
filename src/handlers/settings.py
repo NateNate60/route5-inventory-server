@@ -1,13 +1,15 @@
 import flask
-from flask_jwt_extended import jwt_required
+from flask_jwt_extended import get_jwt, jwt_required
 
-from database import DATABASE
+from database import get_db
 
 settings = flask.Blueprint('settings', __name__)
 
 @settings.route("/v1/settings/rates", methods=["GET", "PATCH"])
 @jwt_required()
 def buyrates () :
+    claims = get_jwt()
+    DATABASE = get_db(claims["org"])
     if flask.request.method == "PATCH":
         data = flask.request.json
 
@@ -40,6 +42,8 @@ def buyrates () :
 @settings.route("/v1/settings/threshhold", methods=["GET", "PATCH"])
 @jwt_required()
 def threshhold () :
+    claims = get_jwt()
+    DATABASE = get_db(claims["org"])
     if flask.request.method == "PATCH":
         return flask.Response('{"error": "unimplemented"}', status=501)
     else:

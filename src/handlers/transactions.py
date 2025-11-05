@@ -1,14 +1,17 @@
 import flask
-from flask_jwt_extended import jwt_required
+from flask_jwt_extended import get_jwt, jwt_required
 
-from database import DATABASE
 from datetime import datetime
+
+from database import get_db
 
 transactions = flask.Blueprint('transactions', __name__)
 
 @transactions.route("/v1/transaction")
 @jwt_required()
 def get_transaction ():
+    claims = get_jwt()
+    DATABASE = get_db(claims["org"])
     id = flask.request.args.get("id")
     if id == None:
         return flask.Response({"error": "No item ID provided"}, status=400)
@@ -31,7 +34,8 @@ def get_transaction ():
 @transactions.route("/v1/transaction/buys")
 @jwt_required()
 def get_buy_transactions ():
-
+    claims = get_jwt()
+    DATABASE = get_db(claims["org"])
     
     start_date = flask.request.args.get("start_date")
     end_date = flask.request.args.get("end_date")
@@ -58,6 +62,9 @@ def get_buy_transactions ():
 @transactions.route("/v1/transaction/sales")
 @jwt_required()
 def get_sale_transactions ():
+    claims = get_jwt()
+    DATABASE = get_db(claims["org"])
+    
     start_date = flask.request.args.get("start_date")
     end_date = flask.request.args.get("end_date")
 

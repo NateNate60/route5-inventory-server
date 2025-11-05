@@ -1,16 +1,16 @@
 import flask
 import datetime
 import tcgplayer
-from flask_jwt_extended import jwt_required
-
-from database import DATABASE
+from database import get_db
+from flask_jwt_extended import jwt_required, get_jwt
 
 inventory = flask.Blueprint('inventory', __name__)
 
 @inventory.route("/v1/inventory/add", methods=["POST"])
 @jwt_required()
 def add_item ():
-    
+    claims = get_jwt()
+    DATABASE = get_db(claims["org"])
     data = flask.request.get_json()
     items = []
     price_total = 0
@@ -97,6 +97,8 @@ def add_item ():
 @inventory.route("/v1/inventory/prices", methods=["PATCH"])
 @jwt_required()
 def change_prices ():
+    claims = get_jwt()
+    DATABASE = get_db(claims["org"])
     if "id" not in flask.request.args or "price" not in flask.request.args:
         return flask.Response({"error": "Invalid parameters"}, status=400)
 
@@ -119,6 +121,8 @@ def change_prices ():
 @inventory.route("/v1/inventory/consign", methods=["POST"])
 @jwt_required()
 def consign_item ():
+    claims = get_jwt()
+    DATABASE = get_db(claims["org"])
     item = flask.request.get_json()
     if item["type"] not in ("card", "slab", "sealed"):
         return flask.Response(
@@ -157,6 +161,8 @@ def consign_item ():
 @inventory.route("/v1/inventory/sell", methods=["POST"])
 @jwt_required()
 def sell_item ():
+    claims = get_jwt()
+    DATABASE = get_db(claims["org"])
     json = flask.request.get_json()
     payment_method = json["payment_method"]
     credit_applied = int(json["credit_applied"]) if "credit_applied" in json else 0
@@ -238,6 +244,8 @@ def sell_item ():
 @inventory.route("/v1/inventory/prices/stale", methods=["GET"])
 @jwt_required()
 def get_stale_prices ():
+    claims = get_jwt()
+    DATABASE = get_db(claims["org"])
     cursor = DATABASE["inventory"].find({
         "sale_price_date": {"$lt": datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=7)},
         "quantity": {"$gt": 0}
@@ -254,6 +262,9 @@ def get_stale_prices ():
 @inventory.route("/v1/inventory/all", methods=["GET"])
 @jwt_required()
 def get_all_inventory ():
+    claims = get_jwt()
+    DATABASE = get_db(claims["org"])
+
     r = []
 
     # Find everything
@@ -310,6 +321,9 @@ def get_all_inventory ():
 @inventory.route("/v1/inventory", methods=["GET"])
 @jwt_required()
 def get_inventory_info ():
+    claims = get_jwt()
+    DATABASE = get_db(claims["org"])
+
     id = flask.request.args.get("id")
     if id == None:
         return flask.Response('{"error": "No item ID provided"}', status=400)

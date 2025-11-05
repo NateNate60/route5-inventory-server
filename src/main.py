@@ -4,8 +4,6 @@ import flask_jwt_extended
 from config import TEST, KEY
 from datetime import datetime, timedelta
 
-from database import DATABASE
-
 from handlers.inventory import inventory
 from handlers.transactions import transactions
 from handlers.psa import psa

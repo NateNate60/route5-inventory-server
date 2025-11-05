@@ -3,7 +3,7 @@ import csv
 import datetime
 from flask_jwt_extended import jwt_required
 from werkzeug.utils import secure_filename
-from authentication import admin_required
+from authentication import admin_required, route5_required
 from mysql import connector
 import config
 import tcgplayer
@@ -12,6 +12,7 @@ prices = flask.Blueprint('prices', __name__)
 
 @prices.route("/v1/prices/update", methods=["POST"])
 @admin_required()
+@route5_required()
 @jwt_required()
 def process_update ():
     if "file" not in flask.request.files:
@@ -169,6 +170,7 @@ def search_db ():
 
 @prices.route("/v1/prices/associateupc", methods=["PUT"])
 @admin_required()
+@route5_required()       
 @jwt_required()
 def associate_upc_web():
     tcg_id = flask.request.args.get("tcg_id")
