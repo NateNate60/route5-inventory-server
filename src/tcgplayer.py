@@ -19,6 +19,7 @@ class Card:
     hp_low_price: int
     dm_low_price: int
     attribute: str
+    image_url: str
 
     def to_dict (self):
         """
@@ -36,6 +37,7 @@ class Sealed:
     item_name: str
     sealed_market_price: int
     sealed_low_price: int
+    image_url: str
 
     def to_dict (self):
         """
@@ -83,7 +85,8 @@ def search_card_database (query: str) -> list[Card]:
             mp_low_price=result[11],
             hp_low_price=result[12],
             dm_low_price=result[13],
-            attribute=result[14]
+            attribute=result[14],
+            image_url=result[15]
         )
         r.append(card)
     return r
@@ -114,7 +117,8 @@ def card_database_by_id (tcg_id: str) -> Card | Sealed | None:
                 upc=result[2],
                 item_name=result[3],
                 sealed_market_price=result[4],
-                sealed_low_price=result[5]
+                sealed_low_price=result[5],
+                image_url=result[6]
             )
             return item
 
@@ -135,7 +139,8 @@ def card_database_by_id (tcg_id: str) -> Card | Sealed | None:
             mp_low_price=result[11],
             hp_low_price=result[12],
             dm_low_price=result[13],
-            attribute=result[14]
+            attribute=result[14],
+            image_url=result[15]
         )
         item = card
         break
@@ -167,7 +172,8 @@ def search_sealed_database (query: str, upc_search: bool = False) -> list[Sealed
             upc=result[2],
             item_name=result[3],
             sealed_market_price=result[4],
-            sealed_low_price=result[5]
+            sealed_low_price=result[5],
+            image_url=result[6]
         ))
     return items
 

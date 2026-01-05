@@ -15,7 +15,8 @@ CREATE TABLE IF NOT EXISTS pokemon (
     mp_low_price INTEGER,
     hp_low_price INTEGER,
     dm_low_price INTEGER,
-    attribute VARCHAR(255)
+    attribute VARCHAR(255),
+    photo_url VARCHAR(255)
 );
 
 CREATE TABLE IF NOT EXISTS sealed (
@@ -24,5 +25,6 @@ CREATE TABLE IF NOT EXISTS sealed (
     upc CHAR(12),
     item_name VARCHAR(255) NOT NULL,
     sealed_market_price INTEGER,
-    sealed_low_price INTEGER
+    sealed_low_price INTEGER,
+    photo_url VARCHAR(255)
 );
