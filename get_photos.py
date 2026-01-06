@@ -37,10 +37,10 @@ def main():
     en_sets = get_en_sets()
     jp_sets = get_jp_sets()
     completed = 0
-    # for setID in en_sets:
-    #     process_set(setID, 3)
-    #     completed += 1
-    #     print(f"Completed {completed} sets", end='\r')
+    for setID in en_sets:
+        process_set(setID, 3)
+        completed += 1
+        print(f"Completed {completed} sets", end='\r')
     for setID in jp_sets:
         process_set(setID, 85)
         completed += 1
