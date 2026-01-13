@@ -282,6 +282,7 @@ def get_all_inventory ():
                     "canonicalName": sealed.item_name,
                     "setName": sealed.set_name,
                     "attribute": "",
+                    "imageURL": sealed.image_url,
                     "priceData": {
                         "sealedMarketPrice": sealed.sealed_market_price,
                         "sealedLowPrice": sealed.sealed_low_price
@@ -299,11 +300,13 @@ def get_all_inventory ():
                         "tcgID": card.tcg_id,
                         "canonicalName": card.card_name,
                         "setName": card.set_name,
-                        "attribute": card.attribute
+                        "attribute": card.attribute,
+                        "imageURL": card.image_url
                     }
                 else:
                     card = None
             if type(card) is tcgplayer.Card:
+                item["tcg_price_data"]["imageURL"] = card.image_url
                 item["tcg_price_data"]["priceData"] = {
                     "nmMarketPrice": card.nm_market_price,
                     "lpMarketPrice": card.lp_market_price,
