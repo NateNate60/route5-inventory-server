@@ -24,7 +24,7 @@ def psa_api_lookup () :
         "Authorization": f"Bearer {config.PSA_TOKEN}"
     }
 
-    response = httpx.request("GET", f"https://api.psacard.com/publicapi/cert/GetByCertNumber/{cert}", headers=headers)
+    response = httpx.request("GET", f"https://api.psacard.com/publicapi/cert/GetByCertNumber/{cert}", headers=headers, timeout=20)
 
     if response.status_code != 200:
         return flask.Response('{"error": "Could not find cert info in PSA database"}', status=401)
@@ -32,9 +32,6 @@ def psa_api_lookup () :
     
 
     json = response.json()["PSACert"]
-    json["Brand"] = json["Brand"].replace("POKEMON GAME ", "")
-    json["Brand"] = json["Brand"].replace("POKEMON ", "")
-
     return {"cert": json["CertNumber"],
             "grade": f"{json['CardGrade'].split(' ')[-1]}",
             "grader": "PSA",
