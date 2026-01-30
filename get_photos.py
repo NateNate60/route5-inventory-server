@@ -44,8 +44,10 @@ def process_set(setID, set_name, language) :
             hits += 1
         elif ("Code Card" not in product["name"]) :
             misses += 1
-    print(f"Completed set {set_name} ({hits} hits, {misses} misses, {int(100*hits/(misses + hits))}%)")
-
+    try:
+        print(f"Completed set {set_name} ({hits} hits, {misses} misses, {int(100*hits/(misses + hits))}%)")
+    except ZeroDivisionError:
+        print(f"Completed set {set_name} (no hits, no misses)")
 def main():
     en_sets = get_en_sets()
     jp_sets = get_jp_sets()
