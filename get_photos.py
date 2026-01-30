@@ -18,8 +18,10 @@ def process_set(setID, set_name, language) :
 
     tcgcsv = requests.get(f"https://tcgcsv.com/tcgplayer/{language}/{setID}/products").json()
     results = tcgcsv.get("results")
+    hits = 0
+    misses = 0
     for product in results:
-        if len(product["extendedData"]) < 2:
+        if len(product["extendedData"]) < 3:
             cursor.execute("UPDATE sealed SET photo_url = %s WHERE item_name = %s", (product["imageUrl"], product["name"]))
         else:
             if product["extendedData"][0]["name"] == "Number":
@@ -33,11 +35,17 @@ def process_set(setID, set_name, language) :
                 set_name
             ))
         MYSQL.commit()
+        if cursor.rowcount :
+            hits += 1
+        elif ("Code Card" not in product["name"]) :
+            misses += 1
+    print(f"Completed set {set_name} ({hits} hits, {misses} misses, {int(100*hits/(misses + hits))}%)")
 
 def main():
     en_sets = get_en_sets()
     jp_sets = get_jp_sets()
     completed = 0
+    process_set(1373, "Team Rocket", 3)
     for setID in en_sets:
         process_set(setID[0], setID[1], 3)
         completed += 1
