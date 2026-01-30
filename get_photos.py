@@ -1,6 +1,7 @@
 import requests
 from mysql import connector
 from src import config
+import json
 
 def get_en_sets() -> list[tuple[str, str]]:
     tcgcsv = requests.get("https://tcgcsv.com/tcgplayer/3/groups").json()
@@ -21,6 +22,10 @@ def process_set(setID, set_name, language) :
     hits = 0
     misses = 0
     for product in results:
+        if "extendedData" not in product:
+            # deformed entry
+            print(f"Deformed object {json.dumps(product)}")
+            continue
         if len(product["extendedData"]) < 3:
             cursor.execute("UPDATE sealed SET photo_url = %s WHERE item_name = %s", (product["imageUrl"], product["name"]))
         else:
