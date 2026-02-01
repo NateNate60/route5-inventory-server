@@ -48,19 +48,32 @@ def process_set(setID, set_name, language) :
         print(f"Completed set {set_name} ({hits} hits, {misses} misses, {int(100*hits/(misses + hits))}%)")
     except ZeroDivisionError:
         print(f"Completed set {set_name} (no hits, no misses)")
+
+    return (hits, misses)
+
 def main():
     en_sets = get_en_sets()
     jp_sets = get_jp_sets()
     completed = 0
-    process_set(1373, "Team Rocket", 3)
+    hits = 0
+    misses = 0
     for setID in en_sets:
-        process_set(setID[0], setID[1], 3)
+        h, m = process_set(setID[0], setID[1], 3)
+        hits += h
+        misses += m
         completed += 1
         print(f"Completed {completed} sets", end='\r')
+    print(f"Total {hits} hits, {misses} misses, {int(100 * hits/(hits+misses))}")
+    hits = 0
+    misses = 0
     for setID in jp_sets:
-        process_set(setID[0], setID[1], 85)
+        h, m = process_set(setID[0], setID[1], 85)
+        hits += h
+        misses += m
         completed += 1
         print(f"Completed {completed} sets", end='\r')
+    print("Total {hits} hits, {misses} misses, {int(100 * hits/(hits+misses))}%")
+
 
 if __name__ == "__main__":
     main()
