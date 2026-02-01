@@ -72,7 +72,7 @@ def main():
         misses += m
         completed += 1
         print(f"Completed {completed} sets", end='\r')
-    print("Total {hits} hits, {misses} misses, {int(100 * hits/(hits+misses))}%")
+    print(f"Total {hits} hits, {misses} misses, {int(100 * hits/(hits+misses))}%")
 
 
 if __name__ == "__main__":

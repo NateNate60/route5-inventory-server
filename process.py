@@ -69,8 +69,7 @@ def process (filename: str) -> None:
                                 "lp_low_price = %(lpl)s, " \
                                 "mp_low_price = %(mpl)s, " \
                                 "hp_low_price = %(hpl)s, " \
-                                "dm_low_price = %(dml)s, " \
-                                "photo_url = '' " \
+                                "dm_low_price = %(dml)s " \
                                     , {
                                     "tcgid": row[0],
                                     # Column 1 always says "pokemon"
