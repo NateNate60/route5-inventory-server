@@ -107,7 +107,7 @@ def export_tcg_csv ():
     MYSQL = connector.connect(host="localhost", user=config.MYSQL_USER, password=config.MYSQL_PASSWORD, database="route5prices", connection_timeout=3600)
     cursor = MYSQL.cursor()
 
-    items = []
+    items = {}
     for item in tx["items"]:
         if item["id"][0] != "B":
             # Skip if it is not bulk
@@ -133,10 +133,16 @@ def export_tcg_csv ():
             # inconclusive result
             continue
         result = results[0]
-        items.append((result[0], result[1]))
+        if result[0] in items.keys():
+            items[result[0]]["qty"] += 1
+        else:
+            items[result[0]] = {
+                "qty": 1,
+                "price": result[1]
+            }
 
     string = "TCGplayer Id,,,,,,,,,,,,,Add to Quantity,TCG Marketplace Price\n"
-    for item in items:
-        string += f"{item[0]},,,,,,,,,,,,,1,{int(item[1]) / 100},\n"
+    for key in items.keys():
+        string += f"{key},,,,,,,,,,,,,{items[key]['qty']},{int(items[key]['price']) / 100},\n"
     MYSQL.close()
     return flask.Response(bytes(string, "utf-8"), content_type="text/csv")
