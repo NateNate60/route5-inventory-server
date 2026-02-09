@@ -133,10 +133,17 @@ def export_tcg_csv ():
             # inconclusive result
             continue
         result = results[0]
-        if result[0] in items.keys():
-            items[result[0]]["qty"] += 1
+        addition = {
+            "NM": 0,
+            "LP": 1,
+            "MP": 2,
+            "HP": 3,
+            "DM": 4
+        }[condition]
+        if result[0] + addition in items.keys():
+            items[result[0] + addition]["qty"] += 1
         else:
-            items[result[0]] = {
+            items[result[0] + addition] = {
                 "qty": 1,
                 "price": result[1]
             }
