@@ -69,12 +69,15 @@ def add_item ():
                                                     replacement=item,
                                                     upsert=True)
             item["quantity"] = 1
+        tcg_id = item["tcg_price_data"]["tcgID"] if "tcg_price_data" in item else None
         items.append({
             "id": item["id"],
             "description": item["description"],
             "acquired_price": item["acquired_price"],
             "sale_price": item["sale_price"],
-            "quantity": item["quantity"]
+            "quantity": item["quantity"],
+            "condition": item["condition"],
+            "tcg_id": tcg_id,
         })
         price_total += item["acquired_price"] * item["quantity"]
     txid = "TXB" + f"{DATABASE['buys'].count_documents({})}".zfill(6)
