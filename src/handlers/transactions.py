@@ -2,7 +2,9 @@ import flask
 from flask_jwt_extended import get_jwt, jwt_required
 
 from datetime import datetime
+from mysql import connector
 
+import config
 from database import get_db
 
 transactions = flask.Blueprint('transactions', __name__)
@@ -86,3 +88,55 @@ def get_sale_transactions ():
         thing["sale_date"] = datetime.isoformat(thing["sale_date"]) + 'Z'
         data.append(thing)
     return data
+
+@transactions.route("/v1/transaction/tcgplayer")
+@jwt_required()
+def export_tcg_csv ():
+    claims = get_jwt()
+    DATABASE = get_db(claims["org"])
+
+    txid = flask.request.args.get("txid")
+
+    if not txid:
+        return flask.Response({"error": "No TXID provided"}, status=400)
+
+    tx = DATABASE["buys"].find_one({"txid": txid})
+    if tx is None:
+        return flask.Response({"error": "TXID not found"}, status=404)
+    
+    MYSQL = connector.connect(host="localhost", user=config.MYSQL_USER, password=config.MYSQL_PASSWORD, database="route5prices", connection_timeout=3600)
+    cursor = MYSQL.cursor()
+
+    items = []
+    for item in tx["items"]:
+        if item["id"][0] != "B":
+            # Skip if it is not bulk
+            continue
+        CONDITION_MATRIX = {
+            "NM": "nm_market_price",
+            "LP": "lp_market_price",
+            "MP": "mp_market_price",
+            "HP": "hp_market_price",
+            "DM": "dm_market_price"
+        }
+        condition = item["condition"] if "condition" in item else "NM"
+        tcg_id = item.get("tcg_id")
+
+        if tcg_id is None:
+            # Not provided
+            continue
+        else:
+            # TCG ID is given, just figure out the market price
+            cursor.execute(f"SELECT tcg_id, {CONDITION_MATRIX.get(condition)} FROM pokemon WHERE tcg_id = %s", (tcg_id,))
+        results = cursor.fetchall()
+        if len(results) != 1:
+            # inconclusive result
+            continue
+        result = results[0]
+        items.append((result[0], result[1]))
+
+    string = "TCGplayer Id,,,,,,,,,,,,,Add to Quantity,TCG Marketplace Price\n"
+    for item in items:
+        string += f"{item[0]},,,,,,,,,,,,,1,{int(item[1]) / 100},\n"
+    MYSQL.close()
+    return flask.Response(bytes(string, "utf-8"), content_type="text/csv")
