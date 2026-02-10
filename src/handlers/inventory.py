@@ -91,7 +91,8 @@ def add_item ():
             "payment_method": data["payment_method"] if "payment_method" in data else "unknown",
             "bulk_total": data["bulk_total"] if "bulk_total" in data else 0,
             "items": items,
-            "txid": txid
+            "txid": txid,
+            "username": claims.get("sub"),
         }
     )
 
@@ -232,7 +233,8 @@ def sell_item ():
             "payment_method": payment_method,
             "bulk_total": bulk_total,
             "items": processed_items,
-            "txid": txid
+            "txid": txid,
+            "username": claims.get("sub"),
         }
     )
 

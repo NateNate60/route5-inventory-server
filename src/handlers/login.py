@@ -49,7 +49,8 @@ def get_access_token ():
     jwt = flask_jwt_extended.get_jwt()
     access_token = flask_jwt_extended.create_access_token(identity=identity, additional_claims={
         "org": jwt["org"],
-        "is_admin": jwt["is_admin"]
+        "is_admin": jwt["is_admin"],
+        "username": identity,
     })
     return flask.jsonify(access_token=access_token)
 
