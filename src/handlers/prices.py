@@ -159,7 +159,7 @@ def search_db ():
         elif product_type == "sealed":
             cards = tcgplayer.search_sealed_database(query)
         elif product_type == "all":
-            cards = tcgplayer.search_card_database(query) + tcgplayer.search_sealed_database(query)
+            cards = tcgplayer.search_sealed_database(query) + tcgplayer.search_card_database(query)
         else:
             cards = []
     else:
