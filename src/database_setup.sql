@@ -22,9 +22,15 @@ CREATE TABLE IF NOT EXISTS pokemon (
 CREATE TABLE IF NOT EXISTS sealed (
     tcg_id INTEGER NOT NULL PRIMARY KEY,
     set_name VARCHAR(255) NOT NULL,
-    upc CHAR(12),
     item_name VARCHAR(255) NOT NULL,
     sealed_market_price INTEGER,
     sealed_low_price INTEGER,
     photo_url VARCHAR(255)
+);
+
+CREATE TABLE upc (
+    tcg_id INTEGER NOT NULL,
+    upc CHAR(13) NOT NULL,
+    PRIMARY KEY (tcg_id, upc),
+    FOREIGN KEY (tcg_id) REFERENCES sealed(tcg_id)
 );

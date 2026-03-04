@@ -33,7 +33,7 @@ class Card:
 class Sealed:
     tcg_id: str
     set_name: str
-    upc: str
+    upc: str | None
     item_name: str
     sealed_market_price: int
     sealed_low_price: int
@@ -104,9 +104,11 @@ def card_database_by_id (tcg_id: str) -> Card | Sealed | None:
     db_result = cursor.fetchall()
     if cursor.rowcount == 0:
         # Not in the pokemon table, try sealed
-        cursor.execute("SELECT * FROM sealed WHERE tcg_id = %s OR (upc = %s AND upc != '')", (tcg_id, tcg_id))
+        if len(tcg_id) in (12, 13):
+            cursor.execute("SELECT * FROM sealed WHERE tcg_id = (SELECT tcg_id FROM upc WHERE upc = %s LIMIT 1)", (tcg_id,))
+        else:
+            cursor.execute("SELECT * FROM sealed WHERE tcg_id = %s", (tcg_id, tcg_id))
         db_result = cursor.fetchall()
-        MYSQL.commit()
         if cursor.rowcount == 0:
             # Not in the sealed table either
             return None
@@ -114,11 +116,11 @@ def card_database_by_id (tcg_id: str) -> Card | Sealed | None:
             item = Sealed(
                 tcg_id=result[0],
                 set_name=result[1],
-                upc=result[2],
-                item_name=result[3],
-                sealed_market_price=result[4],
-                sealed_low_price=result[5],
-                image_url=result[6]
+                upc=tcg_id if len(tcg_id) in (12, 13) else None,
+                item_name=result[2],
+                sealed_market_price=result[3],
+                sealed_low_price=result[4],
+                image_url=result[5]
             )
             return item
 
@@ -158,7 +160,7 @@ def search_sealed_database (query: str, upc_search: bool = False) -> list[Sealed
     MYSQL = connector.connect(host="localhost", user=config.MYSQL_USER, password=config.MYSQL_PASSWORD, database="route5prices", connection_timeout=60)
     cursor = MYSQL.cursor()
     if upc_search:
-        cursor.execute("SELECT * FROM sealed WHERE upc = %s", (query,))
+        cursor.execute("SELECT * FROM sealed WHERE tcg_id = (SELECT tcg_id FROM upc WHERE upc = %s LIMIT 1)", (query,))
     else:
         cursor.execute("SELECT * FROM sealed WHERE item_name LIKE CONCAT('%', %s ,'%') LIMIT 10",
                     (query,))
@@ -169,11 +171,11 @@ def search_sealed_database (query: str, upc_search: bool = False) -> list[Sealed
         items.append(Sealed(
             tcg_id=result[0],
             set_name=result[1],
-            upc=result[2],
-            item_name=result[3],
-            sealed_market_price=result[4],
-            sealed_low_price=result[5],
-            image_url=result[6]
+            upc=(query if upc_search else None),
+            item_name=result[2],
+            sealed_market_price=result[3],
+            sealed_low_price=result[4],
+            image_url=result[5]
         ))
     return items
 
@@ -189,8 +191,7 @@ def associate_upc (tcg_id: str, upc: str) -> int:
     if len(upc) != 12 and not (len(upc) == 13 and upc[0] == '1'):
         return 0
     cursor = MYSQL.cursor()
-    cursor.execute("UPDATE sealed SET upc = %s WHERE tcg_id = %s AND upc = ''", 
-                   (upc, tcg_id))
+    cursor.execute("INSERT IGNORE INTO upc VALUES (%s, %s)", (tcg_id, upc))
     MYSQL.commit()
 
     return cursor.rowcount

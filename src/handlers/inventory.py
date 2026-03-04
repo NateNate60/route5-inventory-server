@@ -24,9 +24,9 @@ def add_item ():
         if "tcg_id" in item:
             card = tcgplayer.card_database_by_id(item["tcg_id"])
             item["description"] = card.card_name
-            if item["type"] == "sealed":
-                # Add this UPC to the card database
-                tcgplayer.associate_upc(item["tcg_id"], item["id"])
+        if item["type"] == "sealed" and item.get("upc"):
+            # Add this UPC to the card database
+            tcgplayer.associate_upc(item["id"], item["upc"])
 
         item["acquired_date"] = datetime.datetime.now(datetime.timezone.utc)
         item["consignor_name"] = ""
@@ -50,14 +50,18 @@ def add_item ():
                 new_cost_basis = previous_cost_basis + (item["quantity"] * item["acquired_price"])
                 new_cost_basis_per_unit = new_cost_basis / (item["quantity"] + db_entry["quantity"])
 
+                update_data = {
+                        "acquired_price": new_cost_basis_per_unit,
+                        "sale_price": item["sale_price"],
+                        "sale_price_date": datetime.datetime.now(datetime.timezone.utc),
+                        
+                }
+                if item.get("upc"):
+                    update_data["upc"] = item.get("upc")
                 # Increment the number of this sealed product in inventory
                 DATABASE["inventory"].update_one({"id": item["id"]}, {
                     "$inc": {"quantity": item["quantity"]},
-                    "$set": {
-                        "acquired_price": new_cost_basis_per_unit,
-                        "sale_price": item["sale_price"],
-                        "sale_price_date": datetime.datetime.now(datetime.timezone.utc)
-                    }
+                    "$set": update_data
                 })
                 
             
@@ -336,26 +340,34 @@ def get_inventory_info ():
     if id == None:
         return flask.Response('{"error": "No item ID provided"}', status=400)
     
-    item = DATABASE["inventory"].find_one({"id": id})
-
-    if item == None:
-        return flask.Response('{"error": "Item ID not found"}', status=404)
-    item.pop("_id", None)
-    if item["type"] == "sealed":
-        sealed = tcgplayer.search_sealed_database(item["id"], True)
+    if len(id) == 12 or len(id) == 13:
+        sealed = tcgplayer.search_sealed_database(id, True)
         if len(sealed) > 0:
             sealed = sealed[0]
+            item = sealed.to_dict()
+            item["type"] = "sealed"
+            item["id"] = sealed.tcg_id
             item["tcg_price_data"] = {
                 "tcgID": sealed.tcg_id,
                 "canonicalName": sealed.item_name,
                 "setName": sealed.set_name,
+                "imageURL": sealed.image_url,
+                "upc": sealed.upc,
                 "attribute": "",
                 "priceData": {
                     "sealedMarketPrice": sealed.sealed_market_price,
                     "sealedLowPrice": sealed.sealed_low_price
                 }
             }
-        
+            item["sale_price"] = sealed.sealed_market_price
+        else:
+            return flask.Response('{"error": "Item ID not found"}', status=404)
+    else:
+        item = DATABASE["inventory"].find_one({"id": id})
+        item.pop("_id", None)
+    if item == None:
+        return flask.Response('{"error": "Item ID not found"}', status=404)
+    
     elif item["type"] == "card":
         if "tcg_price_data" in item:
             # tcgID is known
@@ -382,7 +394,7 @@ def get_inventory_info ():
             }
 
 
-    item['sale_price_date'] = item['sale_price_date'].isoformat() + "Z" if item['sale_price_date'] != "" else ""
-    item['sale_date'] = item['sale_date'].isoformat() + 'Z' if item['sale_date'] != "" else ""
-    item['acquired_date'] = item['acquired_date'].isoformat() + 'Z'
+    item['sale_price_date'] = item['sale_price_date'].isoformat()[:19] + "Z" if item.get('sale_price_date') else ""
+    item['sale_date'] = item['sale_date'].isoformat()[:19] + 'Z' if item.get('sale_date') else ""
+    item['acquired_date'] = item['acquired_date'].isoformat()[:19] + 'Z' if item.get('acquired_date') else datetime.datetime.now().isoformat()[:19] + "Z"
     return item
