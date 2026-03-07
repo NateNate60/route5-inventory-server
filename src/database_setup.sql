@@ -34,3 +34,79 @@ CREATE TABLE upc (
     PRIMARY KEY (tcg_id, upc),
     FOREIGN KEY (tcg_id) REFERENCES sealed(tcg_id)
 );
+
+CREATE TABLE IF NOT EXISTS Users (
+    org VARCHAR(32) NOT NULL,
+    username VARCHAR(32) NOT NULL PRIMARY KEY,
+    password_hash VARCHAR(64) NOT NULL,
+    last_login DATETIME,
+    created DATETIME,
+    is_admin BOOLEAN
+);
+
+CREATE TABLE IF NOT EXISTS Inventory (
+    item_id VARCHAR(16) NOT NULL,
+    item_type VARCHAR(16) NOT NULL,
+    description VARCHAR(255) NOT NULL,
+    tcg_id INTEGER,
+    acquired_date DATETIME NOT NULL,
+    acquired_price DOUBLE NOT NULL,
+    sale_price DOUBLE NOT NULL,
+    item_condition VARCHAR(8) NOT NULL,
+    quantity INTEGER NOT NULL,
+    org VARCHAR(255) NOT NULL,
+    PRIMARY KEY (item_id, org)
+);
+
+CREATE TABLE IF NOT EXISTS Sales (
+    org VARCHAR(255) NOT NULL,
+    username VARCHAR(255) NOT NULL,
+    txid INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    sale_date DATETIME NOT NULL,
+    sale_price_total DOUBLE NOT NULL,
+    credit_applied DOUBLE NOT NULL,
+    payment_method VARCHAR(16) NOT NULL,
+    FOREIGN KEY (username) REFERENCES Users(username)
+);
+
+CREATE TABLE IF NOT EXISTS SellTxRow (
+    txid INTEGER NOT NULL,
+    item_id VARCHAR(16) NOT NULL,
+    description VARCHAR(255) NOT NULL,
+    sale_price DOUBLE NOT NULL,
+    quantity INTEGER,
+    acquired_price DOUBLE,
+    tcg_id INTEGER,
+    FOREIGN KEY (txid) REFERENCES Sales(txid),
+    PRIMARY KEY (txid, item_id)
+);
+
+CREATE TABLE IF NOT EXISTS Buys (
+    org VARCHAR(255) NOT NULL,
+    username VARCHAR(255) NOT NULL,
+    txid INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    acquired_date DATETIME NOT NULL,
+    acquired_price_total DOUBLE NOT NULL,
+    credit_given DOUBLE NOT NULL,
+    payment_method VARCHAR(16) NOT NULL,
+    FOREIGN KEY (username) REFERENCES Users(username)
+);
+
+CREATE TABLE IF NOT EXISTS BuyTxRow (
+    txid INTEGER NOT NULL,
+    item_id VARCHAR(16) NOT NULL,
+    description VARCHAR(255) NOT NULL,
+    acquired_price DOUBLE NOT NULL,
+    market DOUBLE,
+    quantity INTEGER NOT NULL,
+    item_condition VARCHAR(8) NOT NULL,
+    tcg_id INTEGER,
+    FOREIGN KEY (txid) REFERENCES Buys(txid),
+    PRIMARY KEY (txid, item_id)
+);
+
+CREATE TABLE IF NOT EXISTS Settings (
+    org VARCHAR(255) NOT NULL PRIMARY KEY,
+    threshold INTEGER NOT NULL,
+    rates JSON
+);
