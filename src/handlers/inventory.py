@@ -17,10 +17,8 @@ def add_item ():
     
     # Data validation
 
-    if type(data.get("acquired_price_total")) is not int:
-        return flask.Response({"error": "Missing acquired_price_total"})
-    if type(data.get("credit issued")) not in (int, float):
-        return flask.Response({"error": "Missing credit_issued"})
+    if type(data.get("credit_given")) not in (int, float):
+        return flask.Response({"error": "Missing credit_given"}, status=400)
     for item in data['items']:
         if (type(item.get("acquired_price")) not in (int, float) or
             type(item.get("quantity")) is not int or
@@ -28,7 +26,6 @@ def add_item ():
             type(item.get("type")) is not str or
             type(item.get("condition")) is not str or
             type(item.get("id")) not in (int, str) or
-            type(item.get("tcg_id")) not in (int, str, None) or
             type(item.get("sale_price")) not in (int, float)):
 
             return flask.Response({"error": "Items missing one or more required fields"}, status=400)
@@ -56,8 +53,8 @@ def add_item ():
             continue
 
         # If a tcgplayer ID is provided, fetch info from the database instead
-        if "tcg_id" in item:
-            card = tcgplayer.card_database_by_id(item["tcg_id"])
+        if "tcg_price_data" in item:
+            card = tcgplayer.card_database_by_id(item["tcg_price_data"]["tcgID"])
             item["description"] = card.card_name
         if item["type"] == "sealed" and item.get("upc"):
             # Add this UPC to the card database
@@ -73,7 +70,8 @@ def add_item ():
                 item['id'],
                 claims['org']
             ))
-            if cursor.rowcount == 0:
+            results = cursor.fetchall()
+            if len(results) == 0:
                 # Not in inventory, so insert it
                 cursor.execute("INSERT INTO Inventory VALUES (%s, 'sealed', %s, %s, NOW(), %s, %s, %s, %s, %s)", (
                     item['id'],
@@ -87,7 +85,7 @@ def add_item ():
                 ))
                 MYSQL.commit()
             else:
-                result = cursor.fetchone()
+                result = results[0]
                 new_cost_basis = ((result[0] * result[1]) + (item['acquired_price'] * item['quantity'])) / (result[1] + item['quantity'])
                 cursor.execute("UPDATE Inventory SET quantity = quantity + %s, acquired_price = %s, acquired_date = NOW() " \
                                "WHERE item_id = %s AND org = %s", (
