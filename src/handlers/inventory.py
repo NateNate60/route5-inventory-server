@@ -361,7 +361,7 @@ def get_inventory_info ():
                 "acquired_date": result[4],
                 "acquired_price": result[5],
                 "sale_price": result[6],
-                "item_condition": "sealed",
+                "condition": "sealed",
                 "quantity": result[8],
                 "upc": result[11],
             }
@@ -396,7 +396,7 @@ def get_inventory_info ():
             "acquired_date": result[4],
             "acquired_price": result[5],
             "sale_price": result[6],
-            "item_condition": result[7],
+            "condition": result[7],
             "quantity": result[8],
         }
         if item['type'] == 'card':
