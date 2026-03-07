@@ -21,12 +21,11 @@ def process (filename: str) -> None:
                 # This is the first row and contains column headers
                 continue
             elif "Unopened" == row[7]:
-                cursor.execute("INSERT INTO sealed VALUES (%s, %s, %s, %s, %s, %s, '') ON DUPLICATE KEY UPDATE " \
+                cursor.execute("INSERT INTO sealed VALUES (%s, %s, %s, %s, %s, '') ON DUPLICATE KEY UPDATE " \
                                 "sealed_market_price = %s," \
                                 "sealed_low_price = %s", (
                                 row[0],
                                 row[2],
-                                "",
                                 row[3],
                                 int(float(row[8]) * 100),
                                 int(float(row[11]) * 100),
