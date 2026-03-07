@@ -108,7 +108,7 @@ def card_database_by_id (tcg_id: str) -> Card | Sealed | None:
         if len(tcg_id) in (12, 13):
             cursor.execute("SELECT * FROM sealed WHERE tcg_id = (SELECT tcg_id FROM upc WHERE upc = %s LIMIT 1)", (tcg_id,))
         else:
-            cursor.execute("SELECT * FROM sealed WHERE tcg_id = %s", (tcg_id, tcg_id))
+            cursor.execute("SELECT * FROM sealed WHERE tcg_id = %s", (tcg_id,))
         db_result = cursor.fetchall()
         if cursor.rowcount == 0:
             # Not in the sealed table either

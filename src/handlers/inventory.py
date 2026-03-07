@@ -53,7 +53,7 @@ def add_item ():
             continue
 
         # If a tcgplayer ID is provided, fetch info from the database instead
-        if "tcg_price_data" in item:
+        if "tcg_price_data" in item and item['type'] == "card":
             card = tcgplayer.card_database_by_id(item["tcg_price_data"]["tcgID"])
             item["description"] = card.card_name
         if item["type"] == "sealed" and item.get("upc"):
@@ -63,7 +63,9 @@ def add_item ():
         item["acquired_date"] = datetime.datetime.now(datetime.timezone.utc)
         item["consignor_name"] = ""
         item["consignor_contact"] = ""
-        tcg_id = item.get('tcg_id')
+        tcg_id = None
+        if "tcg_price_data" in item:
+            tcg_id = item["tcg_price_data"]["tcgID"]
         market_price = item.get('market_price')
         if item["type"] == "sealed":
             cursor.execute("SELECT acquired_price, quantity FROM Inventory WHERE item_id = %s AND org = %s", (
@@ -115,7 +117,7 @@ def add_item ():
             item["id"],
             item["description"],
             item["acquired_price"],
-            item.get("market_price"),
+            item.get("sale_price"),
             item["quantity"],
             item["condition"],
             item.get("tcg_id")
@@ -186,7 +188,8 @@ def sell_item ():
                     item['id'],
                     item['quantity']
                 ))
-            if cursor.rowcount != 1:
+            results = cursor.fetchall()
+            if len(results) != 1:
                 cursor.close()
                 MYSQL.close()
                 return flask.Response({
@@ -194,7 +197,12 @@ def sell_item ():
                 }, status=404)
         total_price += item["sale_price"] * item["quantity"]
    
-    
+    cursor.execute("UPDATE Inventory SET quantity = quantity - %s WHERE org = %s AND item_id = %s", (
+        item['quantity'],
+        claims['org'],
+        item['id']
+    ))
+    MYSQL.commit()
 
     cursor.execute("INSERT INTO Sales VALUES (%s, %s, NULL, NOW(), %s, %s, %s)", (
         claims["org"],
@@ -208,7 +216,7 @@ def sell_item ():
 
     for item in items:
         if item['id'][0] == 'B':
-            cursor.execute("INSERT INTO SalesTxRow VALUES (%s, %s, %s, %s, %s, NULL, %s)", (
+            cursor.execute("INSERT INTO SellTxRow VALUES (%s, %s, %s, %s, %s, NULL, %s)", (
                 txid,
                 item['id'],
                 item['description'],
@@ -218,7 +226,7 @@ def sell_item ():
             ))
             MYSQL.commit()
         else:
-            cursor.execute("INSERT INTO SalesTxRow VALUES (%s, %s, %s, %s, %s, (SELECT acquired_price FROM Inventory WHERE org = %s AND item_id = %s), %s)", (
+            cursor.execute("INSERT INTO SellTxRow VALUES (%s, %s, %s, %s, %s, (SELECT acquired_price FROM Inventory WHERE org = %s AND item_id = %s), %s)", (
                     txid,
                     item['id'],
                     item['description'],
