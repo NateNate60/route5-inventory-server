@@ -15,8 +15,8 @@ def get_users ():
     cursor = DATABASE["users"].find({"org": claims["org"]})
     list = []
     for user in cursor:
-        created = user["created"].isoformat() 
-        last_login =  user["last_logged_in"].isoformat()
+        created = user["created"].timestamp()
+        last_login =  user["last_logged_in"].timestamp()
         list.append({
             "username": user["username"],
             "roles": user["roles"],

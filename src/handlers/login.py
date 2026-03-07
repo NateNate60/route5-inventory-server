@@ -19,21 +19,30 @@ def password_login () :
     password = data["password"]
     stay_in = data["stay_in"] if "stay_in" in data else False
 
-    record = get_db("route5")["users"].find_one({"username": username})
+    MYSQL = get_db()
+    cursor = MYSQL.cursor()
+    cursor.execute("SELECT * FROM Users WHERE username = %s", (username,))
+    record = cursor.fetchone()
     if record is None:
+        cursor.close()
+        MYSQL.close()
         return flask.Response('{"error": "Username not found"}', status=401)
-    if not bcrypt.verify(password, record["password_hash"]) :
+    
+    
+    cursor.close()
+    MYSQL.close()
+    if not bcrypt.verify(password, record[2]) :
         return flask.Response('{"error": "Password is incorrect"}', status=401)
     
-    org = record["org"]
+    org = record[0]
     
     access_token = flask_jwt_extended.create_access_token(identity=username, additional_claims={
         "org": org,
-        "is_admin": "admin" in record["roles"]
+        "is_admin": bool(record[5])
     })
     refresh_token = flask_jwt_extended.create_refresh_token(identity=username, additional_claims={
         "org": org,
-        "is_admin": "admin" in record["roles"]
+        "is_admin": bool(record[5])
     })
     response = flask.jsonify({
         "access_token": access_token,
@@ -64,6 +73,6 @@ def check_access_token ():
         {
             "username": identity,
             "org": jwt["org"],
-            "expiration": datetime.datetime.fromtimestamp(token[1]["exp"], tz=datetime.timezone.utc).isoformat() + "Z"
+            "expiration": datetime.datetime.fromtimestamp(token[1]["exp"], tz=datetime.timezone.utc).timestamp()
         }
     )

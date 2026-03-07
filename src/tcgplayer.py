@@ -98,6 +98,7 @@ def card_database_by_id (tcg_id: str) -> Card | Sealed | None:
     @param tcg_id (str): The TCG Player ID or UPC of the card (use the ID for the NM version only) or sealed product
     @return Card|Sealed|None: A Card or Sealed object if the item was found, otherwise None
     """
+    tcg_id = str(tcg_id)
     MYSQL = connector.connect(host="localhost", user=config.MYSQL_USER, password=config.MYSQL_PASSWORD, database="route5prices", connection_timeout=60)
     cursor = MYSQL.cursor()
     cursor.execute("SELECT * FROM pokemon WHERE tcg_id = %s", (tcg_id,))
