@@ -183,8 +183,10 @@ def sell_item ():
             MYSQL.close()
             return flask.Response({"error": "Items missing one or more required fields"})
         if item['id'][0] != "B":
-            cursor.execute("SELECT item_type FROM Inventory WHERE org = %s AND item_id = %s AND quantity >= %s", (
+            cursor.execute("SELECT Inventory.item_type FROM Inventory LEFT JOIN upc ON upc.tcg_id = Inventory.tcg_id " \
+                           "WHERE org = %s AND (Inventory.item_id = %s OR upc.upc = %s) AND quantity >= %s", (
                     claims['org'],
+                    item['id'],
                     item['id'],
                     item['quantity']
                 ))
@@ -277,11 +279,12 @@ def get_all_inventory ():
         }
 
         if item["type"] == "sealed":
-            result = cursor.execute("SELECT sealed.tcg_id, sealed.set_name, sealed.item_name, sealed.sealed_market_price, sealed.sealed_low_price, photo_url, upc.upc " \
-                                    "FROM sealed LEFT JOIN upc ON upc.tcg_id = sealed.tcg_id " \
-                                    "WHERE sealed.tcg_id = %s;", (result[0],))
-            if cursor.rowcount == 1:
-                sealed = cursor.fetchone()
+            cursor.execute("SELECT sealed.tcg_id, sealed.set_name, sealed.item_name, sealed.sealed_market_price, sealed.sealed_low_price, photo_url, upc.upc " \
+                           "FROM sealed LEFT JOIN upc ON upc.tcg_id = sealed.tcg_id " \
+                           "WHERE sealed.tcg_id = %s;", (result[0],))
+            result = cursor.fetchall()
+            if len(result) >= 1:
+                sealed = result[0]
                 item["upc"] = sealed[6]
                 item["tcg_price_data"] = {
                     "tcgID": sealed[0],
@@ -294,9 +297,6 @@ def get_all_inventory ():
                         "sealedLowPrice": sealed[4]
                     }
                 }
-            else:
-                # empty out the cursor
-                cursor.fetchall()
         elif item["type"] == "card":
             if item["tcg_id"]:
                 # TCG ID is known
