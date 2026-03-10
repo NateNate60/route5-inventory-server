@@ -13,6 +13,11 @@ def get_jp_sets() -> list[tuple[str, str]]:
     jp = tcgcsv.get("results")
     return [(set_info["groupId"], set_info["name"]) for set_info in jp]
 
+def get_op_sets() -> list[tuple[str, str]]:
+    tcgcsv = requests.get("https://tcgcsv.com/tcgplayer/68/groups").json()
+    op = tcgcsv.get("results")
+    return [(set_info["groupId"], set_info["name"]) for set_info in op]
+
 def process_set(setID, set_name, language) :
     MYSQL = connector.connect(host="localhost", user=config.MYSQL_USER, password=config.MYSQL_PASSWORD, database="route5prices", connection_timeout=30)
     cursor = MYSQL.cursor()
@@ -45,7 +50,8 @@ def process_set(setID, set_name, language) :
         elif ("Code Card" not in product["name"]) :
             misses += 1
     try:
-        print(f"Completed set {set_name} ({hits} hits, {misses} misses, {int(100*hits/(misses + hits))}%)")
+        if hits != 0 or misses != 0:
+            print(f"Completed set {set_name} ({hits} hits, {misses} misses, {int(100*hits/(misses + hits))}%)")
     except ZeroDivisionError:
         print(f"Completed set {set_name} (no hits, no misses)")
 
@@ -54,7 +60,17 @@ def process_set(setID, set_name, language) :
 def main():
     en_sets = get_en_sets()
     jp_sets = get_jp_sets()
+    op_sets = get_op_sets()
     completed = 0
+    hits = 0
+    misses = 0
+    for setID in op_sets:
+        h, m = process_set(setID[0], setID[1], 68)
+        hits += h
+        misses += m
+        completed += 1
+        print(f"Completed {completed} sets", end='\r')
+    print(f"One Piece: Total {hits} hits, {misses} misses, {int(100 * hits/(hits+misses))}")
     hits = 0
     misses = 0
     for setID in en_sets:
@@ -63,7 +79,7 @@ def main():
         misses += m
         completed += 1
         print(f"Completed {completed} sets", end='\r')
-    print(f"Total {hits} hits, {misses} misses, {int(100 * hits/(hits+misses))}")
+    print(f"English Pokemon: Total {hits} hits, {misses} misses, {int(100 * hits/(hits+misses))}")
     hits = 0
     misses = 0
     for setID in jp_sets:
@@ -72,7 +88,7 @@ def main():
         misses += m
         completed += 1
         print(f"Completed {completed} sets", end='\r')
-    print(f"Total {hits} hits, {misses} misses, {int(100 * hits/(hits+misses))}%")
+    print(f"Japanese Pokemon: Total {hits} hits, {misses} misses, {int(100 * hits/(hits+misses))}%")
 
 
 if __name__ == "__main__":

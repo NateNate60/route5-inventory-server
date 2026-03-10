@@ -21,7 +21,7 @@ def process (filename: str) -> None:
                 # This is the first row and contains column headers
                 continue
             elif "Unopened" == row[7]:
-                cursor.execute("INSERT INTO sealed VALUES (%s, %s, %s, %s, %s, '') ON DUPLICATE KEY UPDATE " \
+                cursor.execute("INSERT INTO sealed VALUES (%s, %s, %s, %s, %s, '', %s) ON DUPLICATE KEY UPDATE " \
                                 "sealed_market_price = %s," \
                                 "sealed_low_price = %s", (
                                 row[0],
@@ -31,6 +31,7 @@ def process (filename: str) -> None:
                                 int(float(row[11]) * 100),
                                 int(float(row[8]) * 100),
                                 int(float(row[11]) * 100),
+                                row[1]
                                 ))
                 MYSQL.commit()
             elif "Near Mint" in row[7]:
@@ -57,7 +58,7 @@ def process (filename: str) -> None:
                     dm_row[11] = 0
                 cursor.execute("INSERT INTO pokemon VALUES (%(tcgid)s, %(setname)s, %(cardname)s, %(cardnumber)s, " \
                                 "%(nm)s, %(lp)s, %(mp)s, %(hp)s, %(dm)s, %(nml)s, " \
-                                "%(lpl)s, %(mpl)s, %(hpl)s, %(dml)s, %(attribute)s, '') " \
+                                "%(lpl)s, %(mpl)s, %(hpl)s, %(dml)s, %(attribute)s, '', %(game)s) " \
                                 "ON DUPLICATE KEY UPDATE " \
                                 "nm_market_price = %(nm)s, " \
                                 "lp_market_price = %(lp)s, " \
@@ -71,7 +72,7 @@ def process (filename: str) -> None:
                                 "dm_low_price = %(dml)s " \
                                     , {
                                     "tcgid": row[0],
-                                    # Column 1 always says "pokemon"
+                                    "game": row[1],
                                     "setname": row[2],
                                     "cardname": row[3],
                                     # Column 4 is blank
@@ -118,6 +119,8 @@ def process (filename: str) -> None:
 
 
 def main ():
+    print("Processing OP")
+    process("op.csv")
     print("Processing EN")
     process("en.csv")
     print("Processing JP")
