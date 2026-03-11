@@ -120,7 +120,7 @@ def add_item ():
             item.get("sale_price"),
             item["quantity"],
             item["condition"],
-            item.get("tcg_id")
+            tcg_id
         ))
         MYSQL.commit()
     cursor.close()
