@@ -191,7 +191,7 @@ def sell_item ():
                     item['quantity']
                 ))
             results = cursor.fetchall()
-            if len(results) != 1:
+            if len(results) == 0:
                 cursor.close()
                 MYSQL.close()
                 return flask.Response({
