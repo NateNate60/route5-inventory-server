@@ -29,9 +29,9 @@ def process (filename: str) -> None:
                                 row[3],
                                 int(float(row[8]) * 100),
                                 int(float(row[11]) * 100),
+                                row[1],
                                 int(float(row[8]) * 100),
                                 int(float(row[11]) * 100),
-                                row[1]
                                 ))
                 MYSQL.commit()
             elif "Near Mint" in row[7]:
