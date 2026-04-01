@@ -199,12 +199,12 @@ def sell_item ():
                 }, status=404)
         total_price += item["sale_price"] * item["quantity"]
    
-    cursor.execute("UPDATE Inventory SET quantity = quantity - %s WHERE org = %s AND item_id = %s", (
-        item['quantity'],
-        claims['org'],
-        item['id']
-    ))
-    MYSQL.commit()
+        cursor.execute("UPDATE Inventory SET quantity = quantity - %s WHERE org = %s AND item_id = %s", (
+            item['quantity'],
+            claims['org'],
+            item['id']
+        ))
+        MYSQL.commit()
 
     cursor.execute("INSERT INTO Sales VALUES (%s, %s, NULL, NOW(), %s, %s, %s)", (
         claims["org"],
