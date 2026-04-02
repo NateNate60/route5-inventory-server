@@ -11,46 +11,78 @@ users = flask.Blueprint('users', __name__)
 @jwt_required()
 def get_users ():
     claims = get_jwt()
-    DATABASE = get_db("route5")
-    cursor = DATABASE["users"].find({"org": claims["org"]})
-    list = []
-    for user in cursor:
-        created = user["created"].timestamp()
-        last_login =  user["last_logged_in"].timestamp()
-        list.append({
-            "username": user["username"],
-            "roles": user["roles"],
-            "created": created + "Z",
-            "last_logged_in": last_login + "Z"
-        })
-    return flask.jsonify(list)
+    MYSQL = get_db()
+    cursor = MYSQL.cursor()
+    cursor.execute("SELECT * FROM Users WHERE org = %s", (claims['org'],))
+    results = cursor.fetchall()
+    users = [{
+        "username": user[1],
+        "last_login": user[3].timestamp(),
+        "created": user[4].timestamp(),
+        "is_admin": bool(user[5])
+    } for user in results]
+    
+    cursor.close()
+    return flask.jsonify(users)
 
+@users.route("/v1/users", methods=["PATCH"])
+@jwt_required()
+def modify_user ():
+    claims = get_jwt()
+    
+    data = flask.request.get_json()
+    username = data.get('username')
+    password = data.get('password')
+
+    if type("username") is not str or type("password") is not str:
+        return flask.Response('{"error": "Username or password not provided"}', status=400)
+
+    admin = bool(data.get('admin'))
+
+    if not claims['is_admin'] and claims['username'] != username:
+        return flask.Response('{"error": "Unless you are an admin, you can only change your own password"}', status=403)
+
+    DATABASE = get_db() 
+    cursor = DATABASE.cursor()
+
+    cursor.execute("UPDATE Users SET password_hash = %s WHERE username = %s AND org = %s", (bcrypt.hash(password), username, claims['org']))
+    if (cursor.rowcount == 0):
+        cursor.close()
+        return flask.Response('{"error": "That user is not a member of your org"}', status=403)
+    DATABASE.commit()
+    cursor.close()
+
+    return flask.Response("{}", status=200)
 @users.route("/v1/users/add", methods=["POST"])
 @jwt_required()
 @admin_required()
 def add_user ():
     claims = get_jwt()
-    DATABASE = get_db("route5")
-
+    
     data = flask.request.get_json()
+    username = data.get('username')
+    password = data.get('password')
 
-    if "username" not in data or "password" not in data or "roles" not in data:
-        return flask.Response('{"error": "Username or password or roles not provided"}', status=400)
-    username = data['username']
-    password = data['password']
+    if type("username") is not str or type("password") is not str:
+        return flask.Response('{"error": "Username or password not provided"}', status=400)
 
-    roles = data['roles']
+    admin = bool(data.get('admin'))
 
-    if DATABASE["users"].find_one({"username": username}) != None:
-        return flask.Response('{"error": "That username is taken"}', status=409)
-    DATABASE['users'].insert_one({
-        "username": username,
-        "password_hash": bcrypt.hash(password),
-        "roles": roles,
-        "org": claims["org"],
-        "created": datetime.now(tz=timezone.utc),
-        "last_logged_in": datetime.now(tz=timezone.utc)
-    })
+    DATABASE = get_db() 
+    cursor = DATABASE.cursor()
+
+    cursor.execute("SELECT COUNT(*) FROM Users WHERE username = %s", (username,))
+    if (cursor.fetchone()[0] != 0):
+        cursor.close()
+        return flask.Response('{"error": "Someone else is already using that username"}', status=409)
+    
+    cursor.execute("INSERT INTO Users VALUES (%s, %s, %s, NOW(), NOW(), %s)", (
+        claims['org'],
+        username,
+        bcrypt.hash(password),
+        admin
+    ))
+    DATABASE.commit()
 
     return flask.Response("{}", status=201)
 
@@ -59,12 +91,19 @@ def add_user ():
 @admin_required()
 def rm_user ():
     claims = get_jwt()
-    DATABASE = get_db("route5")
 
     username = flask.request.args.get("username")
 
-    if username is None:
+    if type(username) is not str:
         return flask.Response('{"error": "Username not provided"}', status=400)
-    DATABASE['users'].delete_one({"username": username, "org": claims["org"]})
+    DATABASE = get_db()
+    cursor = DATABASE.cursor()
 
+    cursor.execute("DELETE FROM Users WHERE org = %s AND username = %s", (claims['org'], username))
+    if (cursor.rowcount == 0):
+        DATABASE.commit()
+        cursor.close()
+        return flask.Response('{"error": "Username not found"}', status=404)
+    DATABASE.commit()
+    cursor.close()
     return flask.Response("{}", status=200)
