@@ -1,7 +1,7 @@
 import flask
+import json
 from flask_jwt_extended import get_jwt, jwt_required
 
-from authentication import admin_required
 from database import get_db
 
 settings = flask.Blueprint('settings', __name__)
@@ -35,11 +35,11 @@ def buyrates () :
         data["id"] = "rates"
         MYSQL = get_db()
         cursor = MYSQL.cursor()
-        cursor.execute('UPDATE Settings SET rates = %s WHERE org = %s' (data, claims["org"]))
+        cursor.execute('UPDATE Settings SET rates = %s WHERE org = %s', (json.dumps(data), claims["org"]))
         MYSQL.commit()
         cursor.close()
         MYSQL.close()
-        return flask.Response(status=204)
+        return flask.Response('{}',status=200)
     else:
         MYSQL = get_db()
         cursor = MYSQL.cursor()
