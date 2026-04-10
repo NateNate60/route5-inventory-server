@@ -18,7 +18,7 @@ def add_item ():
     # Data validation
 
     if type(data.get("credit_given")) not in (int, float):
-        return flask.Response({"error": "Missing credit_given"}, status=400)
+        return flask.Response('{"error": "Missing credit_given"}', status=400)
     for item in data['items']:
         if (type(item.get("acquired_price")) not in (int, float) or
             type(item.get("quantity")) is not int or
@@ -28,10 +28,10 @@ def add_item ():
             type(item.get("id")) not in (int, str) or
             type(item.get("sale_price")) not in (int, float)):
 
-            return flask.Response({"error": "Items missing one or more required fields"}, status=400)
+            return flask.Response('{"error": "Items missing one or more required fields"}', status=400)
         
         if item["type"] not in ("card", "slab", "sealed"):
-            return flask.Response({"error": "Invalid item type"}, status=400)
+            return flask.Response('{"error": "Invalid item type"}', status=400)
         price_total += item["acquired_price"] * item["quantity"]
     
     MYSQL = get_db()
@@ -133,13 +133,13 @@ def add_item ():
 def change_prices ():
     claims = get_jwt()
     if "id" not in flask.request.args or "price" not in flask.request.args:
-        return flask.Response({"error": "Invalid parameters"}, status=400)
+        return flask.Response('{"error": "Invalid parameters"}', status=400)
 
     try:
         price = flask.request.args.get('price')
         price = int(price)
     except ValueError:
-        return flask.Response({"error": "Invalid parameters"}, status=400)
+        return flask.Response('{"error": "Invalid parameters"}', status=400)
     
     MYSQL = get_db()
     cursor = MYSQL.cursor()
@@ -151,13 +151,13 @@ def change_prices ():
     MYSQL.commit()
     
     if cursor.rowcount == 0:
-        return flask.Response({"error": "Inventory item not found"}, status=404)
+        return flask.Response('{"error": "Inventory item not found"}', status=404)
     return {}
 
 @inventory.route("/v1/inventory/consign", methods=["POST"])
 @jwt_required()
 def consign_item ():
-    return flask.Response({"error": "Unimplemented"}, status=501)
+    return flask.Response('{"error": "Unimplemented"}', status=501)
 
 @inventory.route("/v1/inventory/sell", methods=["POST"])
 @jwt_required()
@@ -181,7 +181,7 @@ def sell_item ():
 
             cursor.close()
             MYSQL.close()
-            return flask.Response({"error": "Items missing one or more required fields"})
+            return flask.Response('{"error": "Items missing one or more required fields"}', status=400)
         if item['id'][0] != "B":
             cursor.execute("SELECT Inventory.item_type FROM Inventory LEFT JOIN upc ON upc.tcg_id = Inventory.tcg_id " \
                            "WHERE org = %s AND (Inventory.item_id = %s OR upc.upc = %s) AND quantity >= %s", (
@@ -194,9 +194,7 @@ def sell_item ():
             if len(results) == 0:
                 cursor.close()
                 MYSQL.close()
-                return flask.Response({
-                    "error": f"Not enough of item with ID {id} in stock"
-                }, status=404)
+                return flask.Response('{"error": "One or more items do not have enough stock"}', status=404)
         total_price += item["sale_price"] * item["quantity"]
    
         cursor.execute("UPDATE Inventory SET quantity = quantity - %s WHERE org = %s AND item_id = %s", (
@@ -245,7 +243,7 @@ def sell_item ():
 @inventory.route("/v1/inventory/prices/stale", methods=["GET"])
 @jwt_required()
 def get_stale_prices ():
-    return flask.Response({"error": "Unimplemented"}, status=501) 
+    return flask.Response('{"error": "Unimplemented"}', status=501) 
 
 @inventory.route("/v1/inventory/all", methods=["GET"])
 @jwt_required()

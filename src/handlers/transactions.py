@@ -19,7 +19,7 @@ def get_buy_transactions ():
         start_date = int(flask.request.args.get("start_date"))
         end_date = int(flask.request.args.get("end_date"))
     except (ValueError, TypeError):
-        return flask.Response({"error": "Invalid dates"}, status=400)
+        return flask.Response('{"error": "Invalid dates"}', status=400)
 
     MYSQL = get_db()
     cursor = MYSQL.cursor()
@@ -66,7 +66,7 @@ def get_sale_transactions ():
         start_date = int(flask.request.args.get("start_date"))
         end_date = int(flask.request.args.get("end_date"))
     except (ValueError, TypeError):
-        return flask.Response({"error": "Invalid dates"}, status=400)
+        return flask.Response('{"error": "Invalid dates"}', status=400)
 
     MYSQL = get_db()
     cursor = MYSQL.cursor()

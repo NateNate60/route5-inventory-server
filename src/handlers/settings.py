@@ -15,7 +15,7 @@ def buyrates () :
         data = flask.request.json
 
         if not claims.get("is_admin"):
-            return flask.Response({"error": "Only admins can do this"}, status=403)
+            return flask.Response('{"error": "Only admins can do this"}', status=403)
 
         # validation
         MALFORMED_DATA = flask.Response('{"error": "Missing one or more required fiels"}', status=422)
@@ -57,13 +57,13 @@ def threshhold () :
     if flask.request.method == "PATCH":
         # validation
         if not claims.get("is_admin"):
-            return flask.Response({"error": "Only admins can do this"}, status=403)
+            return flask.Response('{"error": "Only admins can do this"}', status=403)
         if not flask.request.args.get("threshold"):
-            return flask.Response({"error": "Threshold not provided"}, status=400)
+            return flask.Response('{"error": "Threshold not provided"}', status=400)
         try:
             t = int(flask.request.args.get("threshold"))
         except ValueError:
-            return flask.Response({"error": "Threshold must be int"}, status=400)
+            return flask.Response('{"error": "Threshold must be int"}', status=400)
         
         MYSQL = get_db()
         cursor = MYSQL.cursor()
