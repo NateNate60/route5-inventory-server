@@ -337,7 +337,7 @@ def get_inventory_info ():
     MYSQL = get_db()
     cursor = MYSQL.cursor()
 
-    if len(id) in (12, 13, 7, 6):
+    if len(id) in (12, 13, 7, 6) and id[0] != 'A':
         if len(id) <= 7:
             cursor.execute("SELECT * FROM Inventory " \
                         "LEFT JOIN upc ON Inventory.tcg_id = upc.tcg_id " \
