@@ -74,7 +74,7 @@ def threshhold () :
         MYSQL.commit()
         cursor.close()
         MYSQL.close()
-        return flask.Response({}, status=200)
+        return flask.Response('{}', status=200)
     else:
         MYSQL = get_db()
         cursor = MYSQL.cursor()
