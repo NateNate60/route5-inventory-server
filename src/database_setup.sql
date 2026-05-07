@@ -16,7 +16,8 @@ CREATE TABLE IF NOT EXISTS pokemon (
     hp_low_price INTEGER,
     dm_low_price INTEGER,
     attribute VARCHAR(255),
-    photo_url VARCHAR(255)
+    photo_url VARCHAR(255),
+    game VARCHAR(32)
 );
 
 CREATE TABLE IF NOT EXISTS sealed (
@@ -25,7 +26,8 @@ CREATE TABLE IF NOT EXISTS sealed (
     item_name VARCHAR(255) NOT NULL,
     sealed_market_price INTEGER,
     sealed_low_price INTEGER,
-    photo_url VARCHAR(255)
+    photo_url VARCHAR(255),
+    game VARCHAR(32)
 );
 
 CREATE TABLE upc (
@@ -109,4 +111,15 @@ CREATE TABLE IF NOT EXISTS Settings (
     org VARCHAR(255) NOT NULL PRIMARY KEY,
     threshold INTEGER NOT NULL,
     rates JSON
+);
+
+CREATE TABLE IF NOT EXISTS Comps (
+    id INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    org VARCHAR(255) NOT NULL,
+    comp_name VARCHAR(255),
+    created_date DATETIME NOT NULL,
+    created_by VARCHAR(255) NOT NULL,
+    modified_date DATETIME NOT NULL,
+    modified_by VARCHAR(255) NOT NULL,
+    contents JSON NOT NULL
 );
