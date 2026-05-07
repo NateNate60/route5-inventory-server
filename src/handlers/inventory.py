@@ -128,37 +128,6 @@ def add_item ():
 
     return {"txid": txid}
 
-@inventory.route("/v1/inventory/prices", methods=["PATCH"])
-@jwt_required()
-def change_prices ():
-    claims = get_jwt()
-    if "id" not in flask.request.args or "price" not in flask.request.args:
-        return flask.Response('{"error": "Invalid parameters"}', status=400)
-
-    try:
-        price = flask.request.args.get('price')
-        price = int(price)
-    except ValueError:
-        return flask.Response('{"error": "Invalid parameters"}', status=400)
-    
-    MYSQL = get_db()
-    cursor = MYSQL.cursor()
-    cursor.execute("UPDATE Inventory SET sale_price = %s WHERE item_id = %s AND org = %s", (
-        price,
-        flask.request.args.get["id"],
-        claims['org']
-    ))
-    MYSQL.commit()
-    
-    if cursor.rowcount == 0:
-        return flask.Response('{"error": "Inventory item not found"}', status=404)
-    return {}
-
-@inventory.route("/v1/inventory/consign", methods=["POST"])
-@jwt_required()
-def consign_item ():
-    return flask.Response('{"error": "Unimplemented"}', status=501)
-
 @inventory.route("/v1/inventory/sell", methods=["POST"])
 @jwt_required()
 def sell_item ():
@@ -239,6 +208,37 @@ def sell_item ():
             MYSQL.commit()
 
     return {"txid": txid}
+
+@inventory.route("/v1/inventory/prices", methods=["PATCH"])
+@jwt_required()
+def change_prices ():
+    claims = get_jwt()
+    if "id" not in flask.request.args or "price" not in flask.request.args:
+        return flask.Response('{"error": "Invalid parameters"}', status=400)
+
+    try:
+        price = flask.request.args.get('price')
+        price = int(price)
+    except ValueError:
+        return flask.Response('{"error": "Invalid parameters"}', status=400)
+    
+    MYSQL = get_db()
+    cursor = MYSQL.cursor()
+    cursor.execute("UPDATE Inventory SET sale_price = %s WHERE item_id = %s AND org = %s", (
+        price,
+        flask.request.args.get["id"],
+        claims['org']
+    ))
+    MYSQL.commit()
+    
+    if cursor.rowcount == 0:
+        return flask.Response('{"error": "Inventory item not found"}', status=404)
+    return {}
+
+@inventory.route("/v1/inventory/consign", methods=["POST"])
+@jwt_required()
+def consign_item ():
+    return flask.Response('{"error": "Unimplemented"}', status=501)
 
 @inventory.route("/v1/inventory/prices/stale", methods=["GET"])
 @jwt_required()
