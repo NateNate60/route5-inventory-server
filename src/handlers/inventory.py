@@ -226,7 +226,7 @@ def change_prices ():
     cursor = MYSQL.cursor()
     cursor.execute("UPDATE Inventory SET sale_price = %s WHERE item_id = %s AND org = %s", (
         price,
-        flask.request.args.get["id"],
+        flask.request.args.get("id"),
         claims['org']
     ))
     MYSQL.commit()
