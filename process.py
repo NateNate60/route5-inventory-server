@@ -1,9 +1,36 @@
 from mysql import connector
 from src import config
+from email.message import EmailMessage
+from dotenv import load_dotenv
 import csv
 import datetime
+import os
+import smtplib
+import ssl
+import datetime
+
+load_dotenv()
+PORT = os.getenv("PORT", 465)
+SMTP_SERVER = os.getenv("SMTP_SERVER")
+FROM_EMAIL = os.getenv("FROM_EMAIL")
+TO_EMAIL = os.getenv("TO_EMAIL")
+PASSWORD = os.getenv("PASSWORD")
 
 def process (filename: str) -> None:
+    if os.path.getsize(filename) < 5000:
+        # File is too small, something is wrong
+        print('Failed')
+        context = ssl.create_default_context()
+        with smtplib.SMTP_SSL(SMTP_SERVER, PORT, context=context) as server:
+            server.login(FROM_EMAIL, PASSWORD)
+            msg = EmailMessage()
+            msg["to"] = TO_EMAIL
+            msg["from"] = FROM_EMAIL
+            msg["subject"] = "Price fetching failure"
+            msg.set_content(f"This is an automated message sent by Inventory to notify you that {filename} has failed to parse at {datetime.datetime.now().isoformat()[:19]} (server's time)")
+            server.send_message(msg)
+            server.quit()
+        return
     with open(filename, "r") as f:
         MYSQL = connector.connect(host="localhost", user=config.MYSQL_USER, password=config.MYSQL_PASSWORD, database="route5prices", connection_timeout=3600)
         cursor = MYSQL.cursor()
@@ -116,7 +143,6 @@ def process (filename: str) -> None:
 
     end_time = datetime.datetime.now().timestamp()
     print(f"Updated {count} records in {int(end_time - start_time)} seconds, avg {int(count / (end_time - start_time))} records/s")
-
 
 def main ():
     print("Processing OP")
