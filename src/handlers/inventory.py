@@ -35,8 +35,17 @@ def add_item ():
         price_total += item["acquired_price"] * item["quantity"]
     
     MYSQL = get_db()
-    
     cursor = MYSQL.cursor()
+
+    # Check duplicate asset tags
+    for item in data["items"]:
+        # Check duplicate asset tags
+        cursor.execute("SELECT COUNT(*) FROM Inventory WHERE item_id = %s", (item["id"],))
+        count = cursor.fetchone()[0]
+        if count:
+            MYSQL.close()
+            return flask.Response('{"error": "Asset tag number ' + item["id"] + ' has already been used. Affix a different asset tag."}', status=400)
+
     cursor.execute("INSERT INTO Buys VALUES (%s, %s, NULL, NOW(), %s, %s, %s)", (
         claims['org'],
         claims['username'],
@@ -100,6 +109,7 @@ def add_item ():
         else:
             item["quantity"] = 1
             if item["id"][0] != "B":
+                
                 cursor.execute("INSERT INTO Inventory VALUES (%s, %s, %s, %s, NOW(), %s, %s, %s, %s, %s)", (
                     item["id"],
                     item["type"],
